@@ -1,0 +1,1847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mundial FIFA 2026 — Análisis CONMEBOL</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#060b14;--s1:#0d1424;--s2:#111c30;--s3:#162038;
+  --border:#1e2f4a;--border2:#263755;
+  --acc:#00d4ff;--acc2:#7c3aed;--acc3:#f97316;
+  --green:#10b981;--yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;
+  --text:#e2e8f0;--muted:#64748b;--muted2:#475569;
+  --gold:#fbbf24;--silver:#94a3b8;--bronze:#cd7f32;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg,#060b14 0%,#0f1a3a 40%,#1a0a2e 100%);
+  border-bottom:1px solid var(--border);
+  padding:20px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+header h1{font-size:1.45rem;font-weight:800;letter-spacing:-.5px;
+  background:linear-gradient(90deg,var(--acc),var(--acc2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-meta{font-size:.72rem;color:var(--muted);text-align:right;line-height:1.7}
+.header-meta b{color:var(--acc)}
+.live-badge{
+  background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);
+  color:#ef4444;border-radius:20px;padding:3px 10px;font-size:.7rem;font-weight:700;
+  display:flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#ef4444;
+  animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── TABS ── */
+nav{background:var(--s1);border-bottom:1px solid var(--border);display:flex;gap:2px;padding:0 32px;overflow-x:auto}
+nav button{
+  background:none;border:none;color:var(--muted);padding:13px 18px;
+  font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap;
+  border-bottom:3px solid transparent;transition:all .2s
+}
+nav button:hover{color:var(--text)}
+nav button.active{color:var(--acc);border-bottom-color:var(--acc)}
+
+/* ── MAIN ── */
+main{padding:28px 32px;max-width:1680px;margin:0 auto}
+.section{display:none}.section.active{display:block}
+
+/* ── SECTION LABEL ── */
+.sec-label{
+  font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);
+  margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sec-label span{color:var(--acc)}
+
+/* ── GRID HELPERS ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:18px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+@media(max-width:1100px){.g3{grid-template-columns:1fr 1fr}.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+/* ── CARD ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px}
+.card h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3 em{color:var(--acc);font-style:normal}
+
+/* ══════════════════════════
+   GROUP STAGE LAYOUT
+══════════════════════════ */
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:24px}
+.group-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.group-header{
+  background:linear-gradient(90deg,var(--s2),var(--s3));
+  padding:12px 18px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border)
+}
+.group-header h2{font-size:1rem;font-weight:800;color:var(--acc)}
+.group-header .gteams{font-size:.72rem;color:var(--muted)}
+
+/* Standings table */
+.standings-table{width:100%;border-collapse:collapse}
+.standings-table th{
+  font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+  padding:6px 10px;text-align:center;background:var(--s2)
+}
+.standings-table th:first-child{text-align:left}
+.standings-table td{padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);font-size:.82rem}
+.standings-table td:first-child{text-align:left;display:flex;align-items:center;gap:7px}
+.standings-table tr:last-child td{border-bottom:none}
+.standings-table tr.qualify td{background:rgba(16,185,129,.04)}
+.standings-table tr.bubble td{background:rgba(245,158,11,.03)}
+.standings-table .pos-badge{
+  width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-size:.65rem;font-weight:800;flex-shrink:0
+}
+.pos1{background:rgba(251,191,36,.25);color:var(--gold)}
+.pos2{background:rgba(148,163,184,.2);color:var(--silver)}
+.pos3{background:rgba(205,127,50,.15);color:var(--bronze)}
+.pos4{background:rgba(239,68,68,.1);color:var(--red)}
+.pts-cell{font-weight:800;color:var(--acc)}
+.qual-bar{width:4px;height:30px;border-radius:2px;flex-shrink:0}
+
+/* Matches list */
+.match-list{border-top:1px solid var(--border)}
+.match-item{
+  padding:10px 18px;border-bottom:1px solid var(--border);
+  display:grid;grid-template-columns:70px 1fr auto 1fr 70px;
+  align-items:center;gap:6px;font-size:.8rem
+}
+.match-item:last-child{border-bottom:none}
+.match-item.played{background:rgba(16,185,129,.04)}
+.match-item.today{background:rgba(249,115,22,.06);border-left:3px solid var(--acc3)}
+.match-date{font-size:.68rem;color:var(--muted);text-align:center}
+.match-team{font-weight:600;display:flex;align-items:center;gap:5px}
+.match-team.right{justify-content:flex-end;text-align:right}
+.match-score{
+  text-align:center;font-weight:800;font-size:.9rem;
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:6px;padding:3px 8px;min-width:52px
+}
+.match-score.live{border-color:var(--acc3);color:var(--acc3)}
+.match-score.pending{color:var(--muted2);font-size:.75rem}
+.match-venue{font-size:.65rem;color:var(--muted);text-align:center}
+
+/* Probability bar in match */
+.prob-micro{display:flex;gap:2px;height:4px;border-radius:2px;overflow:hidden;margin-top:4px}
+.pb-w{background:var(--green)}
+.pb-d{background:var(--yellow)}
+.pb-l{background:var(--red)}
+
+/* Predict badge */
+.pred-badge{
+  font-size:.62rem;padding:2px 6px;border-radius:4px;font-weight:700;
+  white-space:nowrap;
+}
+.pred-badge.win{background:rgba(16,185,129,.2);color:var(--green)}
+.pred-badge.draw{background:rgba(245,158,11,.2);color:var(--yellow)}
+.pred-badge.loss{background:rgba(239,68,68,.2);color:var(--red)}
+
+/* ══════════════════════════
+   MATCH PREDICTOR
+══════════════════════════ */
+.predictor-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:800px){.predictor-grid{grid-template-columns:1fr}}
+.predict-card{
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  transition:border-color .2s
+}
+.predict-card:hover{border-color:var(--border2)}
+.predict-header{
+  padding:12px 16px;background:var(--s2);border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center
+}
+.predict-header .pc-date{font-size:.68rem;color:var(--muted)}
+.predict-header .pc-group{font-size:.68rem;color:var(--acc);font-weight:700}
+.predict-body{padding:16px}
+.predict-match{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.pm-team{display:flex;flex-direction:column;align-items:center;gap:4px;flex:1}
+.pm-flag{font-size:1.8rem}
+.pm-name{font-size:.78rem;font-weight:700;text-align:center}
+.pm-sub{font-size:.62rem;color:var(--muted);text-align:center}
+.pm-vs{font-size:1.1rem;font-weight:900;color:var(--muted2)}
+.predict-probs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.pp-box{border-radius:8px;padding:8px 4px;text-align:center;border:1px solid}
+.pp-box.win{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.25)}
+.pp-box.draw{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)}
+.pp-box.loss{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25)}
+.pp-pct{font-size:1.2rem;font-weight:900;line-height:1}
+.pp-box.win .pp-pct{color:var(--green)}
+.pp-box.draw .pp-pct{color:var(--yellow)}
+.pp-box.loss .pp-pct{color:var(--red)}
+.pp-lbl{font-size:.6rem;color:var(--muted);margin-top:2px}
+.predict-insight{font-size:.72rem;color:var(--muted);line-height:1.5;padding-top:10px;border-top:1px solid var(--border)}
+.predict-insight b{color:var(--text)}
+
+/* ══════════════════════════
+   KNOCKOUT BRACKET
+══════════════════════════ */
+.bracket-scroll{overflow-x:auto;padding-bottom:12px}
+.bracket{display:flex;gap:0;min-width:900px}
+.bracket-round{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:8px;padding:0 8px}
+.bracket-round-label{
+  font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);
+  text-align:center;padding:8px 0;border-bottom:1px solid var(--border);margin-bottom:12px
+}
+.bracket-match{
+  background:var(--s1);border:1px solid var(--border);border-radius:8px;overflow:hidden;
+  font-size:.72rem;min-height:52px
+}
+.bm-team{
+  padding:5px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px
+}
+.bm-team:first-child{border-bottom:1px solid var(--border)}
+.bm-flag{font-size:.95rem}
+.bm-name{font-weight:600;font-size:.7rem;flex:1}
+.bm-prob{font-size:.62rem;color:var(--muted)}
+.bm-team.favorite{background:rgba(0,212,255,.05)}
+.bracket-connector{width:16px;border-top:1px dashed var(--border);align-self:center}
+
+/* ══════════════════════════
+   TEAM PROFILE
+══════════════════════════ */
+.team-sel{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.ts-btn{
+  background:var(--s1);border:1px solid var(--border);border-radius:8px;
+  padding:7px 16px;color:var(--muted);font-size:.8rem;font-weight:600;cursor:pointer;
+  transition:all .2s;display:flex;align-items:center;gap:5px
+}
+.ts-btn:hover{border-color:var(--border2);color:var(--text)}
+.ts-btn.active{border-color:var(--acc);color:var(--acc);background:rgba(0,212,255,.06)}
+
+.profile-top{
+  background:var(--s1);border:1px solid var(--border);border-radius:12px;
+  padding:24px;display:flex;align-items:center;gap:24px;margin-bottom:16px;flex-wrap:wrap
+}
+.pt-flag{font-size:3.5rem}
+.pt-info h2{font-size:1.6rem;font-weight:800;margin-bottom:6px}
+.pt-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:20px;padding:3px 10px;font-size:.7rem;font-weight:600
+}
+.badge.b-acc{border-color:var(--acc);color:var(--acc)}
+.badge.b-gold{border-color:var(--gold);color:var(--gold)}
+.badge.b-red{border-color:var(--red);color:var(--red)}
+.badge.b-green{border-color:var(--green);color:var(--green)}
+.pt-idx{margin-left:auto;text-align:center}
+.pt-idx-num{
+  font-size:3rem;font-weight:900;line-height:1;
+  background:linear-gradient(135deg,var(--acc),var(--acc2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent
+}
+.pt-idx-lbl{font-size:.68rem;color:var(--muted)}
+
+.metrics-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.metric{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px}
+.metric .ml{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:5px}
+.metric .mv{font-size:1.4rem;font-weight:800;line-height:1}
+.metric .ms{font-size:.62rem;color:var(--muted);margin-top:3px}
+.green{color:var(--green)}.yellow{color:var(--yellow)}.red{color:var(--red)}.acc{color:var(--acc)}
+
+.form-strip{display:flex;gap:5px;align-items:center;margin-bottom:16px}
+.form-pill{
+  width:40px;height:32px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:800
+}
+.fp-G{background:rgba(16,185,129,.2);color:var(--green);border:1px solid rgba(16,185,129,.35)}
+.fp-E{background:rgba(245,158,11,.2);color:var(--yellow);border:1px solid rgba(245,158,11,.35)}
+.fp-P{background:rgba(239,68,68,.2);color:var(--red);border:1px solid rgba(239,68,68,.35)}
+.form-lbl{font-size:.68rem;color:var(--muted);margin-left:4px}
+
+.hot-box{
+  background:linear-gradient(135deg,rgba(124,58,237,.12),rgba(0,212,255,.08));
+  border:1px solid rgba(124,58,237,.35);border-radius:10px;
+  padding:16px 20px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start
+}
+.hot-box p{font-size:.85rem;line-height:1.55}
+.hot-box strong{color:var(--acc)}
+
+.prob-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.p3-box{border-radius:10px;padding:16px;text-align:center;border:1px solid}
+.p3-win{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.25)}
+.p3-draw{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.25)}
+.p3-loss{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.25)}
+.p3-pct{font-size:2rem;font-weight:900;line-height:1}
+.p3-win .p3-pct{color:var(--green)}.p3-draw .p3-pct{color:var(--yellow)}.p3-loss .p3-pct{color:var(--red)}
+.p3-lbl{font-size:.7rem;color:var(--muted);margin-top:3px}
+
+.results-tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.results-tbl th{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:7px 10px;background:var(--s2);text-align:left}
+.results-tbl td{padding:7px 10px;border-bottom:1px solid var(--border)}
+.results-tbl tr:hover td{background:var(--s2)}
+.rp{display:inline-flex;width:26px;height:20px;align-items:center;justify-content:center;border-radius:4px;font-size:.68rem;font-weight:800}
+.rp-G{background:rgba(16,185,129,.2);color:var(--green)}
+.rp-E{background:rgba(245,158,11,.2);color:var(--yellow)}
+.rp-P{background:rgba(239,68,68,.2);color:var(--red)}
+
+.chart-wrap{position:relative;height:240px}
+
+/* ── WORLD CUP PATH ── */
+.wc-path{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.wc-path h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:16px}
+.wc-stages{display:flex;gap:0;align-items:stretch}
+.wc-stage{flex:1;text-align:center;position:relative}
+.wc-stage::after{
+  content:'→';position:absolute;right:-8px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:.8rem
+}
+.wc-stage:last-child::after{display:none}
+.wc-stage-inner{padding:10px 8px;background:var(--s2);border:1px solid var(--border);border-radius:8px;margin:0 4px}
+.wc-stage-label{font-size:.6rem;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.wc-stage-val{font-size:.85rem;font-weight:700}
+.wc-stage-prob{font-size:.68rem;color:var(--acc);margin-top:2px}
+
+
+/* ── DISCLAIMER ── */
+.disclaimer{background:var(--s1);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-size:.7rem;color:var(--muted);line-height:1.6;margin-top:24px}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚽ Mundial FIFA 2026 — Dashboard CONMEBOL</h1>
+    <div style="font-size:.72rem;color:var(--muted);margin-top:3px">Fase de grupos · Predicciones · Perfiles · Bracket</div>
+  </div>
+  <div class="live-badge"><span class="live-dot"></span>FASE DE GRUPOS EN CURSO</div>
+  <div class="header-meta">
+    <div>Actualizado: <b>16 jun 2026</b></div>
+    <div>Fuentes: <b>ESPN · FootyStats · FIFA.com · CBS · Yahoo Sports</b></div>
+    <div>Solo partidos oficiales · Sin amistosos</div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('grupos',this)">🗂 Fase de Grupos</button>
+  <button onclick="showTab('predicciones',this)">🎯 Predicciones por Partido</button>
+  <button onclick="showTab('montecarlo',this)">🎲 Simulación Monte Carlo</button>
+</nav>
+
+<main>
+
+<!-- ══════════════ TAB: GRUPOS ══════════════ -->
+<section class="section active" id="grupos">
+  <div class="sec-label">
+    Fase de grupos — 12 grupos · 48 selecciones · Resultados reales + clasificación proyectada
+    <span>● Confirmado = resultado real · 🔮 = proyección analítica</span>
+  </div>
+
+  <div style="background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;font-size:.78rem;display:flex;gap:10px;align-items:flex-start">
+    <span style="font-size:1.2rem">📡</span>
+    <div>
+      <b style="color:var(--acc3)">Resultados confirmados al 14 jun 2026 (21:00 hs)</b> —
+      México 2-0 S.África · Corea 2-1 Chequia · Canadá 1-1 Bosnia · Qatar 1-1 Suiza ·
+      Brasil 1-1 Marruecos · Escocia 1-0 Haití ·
+      <b style="color:var(--red)">USA 4-1 Paraguay</b> · Australia 2-0 Turquía ·
+      <b style="color:var(--gold)">Alemania 7-1 Curazao</b> ·
+      <b style="color:var(--acc)">Países Bajos 1-0 Japón</b> (Van Dijk 51') ·
+      <span style="color:var(--acc3)">ESTA NOCHE: Ecuador vs C.Marfil · Suecia vs Túnez</span>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px" id="groupFilter"></div>
+
+  <div class="groups-grid" id="groupsContainer"></div>
+
+  <div class="disclaimer">
+    ⚠️ <b>Descargo:</b> Las clasificaciones proyectadas y probabilidades son estimaciones analíticas propias. Los resultados marcados con 🔮 son predicciones — no resultados reales. Información informativa y recreativa únicamente.
+  </div>
+</section>
+
+<!-- ══════════════ TAB: PREDICCIONES ══════════════ -->
+<section class="section" id="predicciones">
+  <div class="sec-label">
+    Predicciones por partido — todos los partidos restantes del Mundial dentro de los próximos 14 días
+    <span>CONMEBOL: forma reciente · xG · Elo · FIFA ranking — Resto: Elo · FIFA ranking (modelo Poisson)</span>
+  </div>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px" id="predGroupFilter"></div>
+  <div class="predictor-grid" id="predictorContainer"></div>
+
+  <div class="disclaimer">
+    ⚠️ Para CONMEBOL (Elo ~2115 ARG, ~1991 BRA, ~1982 COL, ~1890 URU, ~1820 ECU, ~1750 PAR) las probabilidades combinan forma reciente, xG, Elo y FIFA ranking. Para el resto de selecciones se usa el mismo modelo Poisson de la pestaña Monte Carlo (Elo + FIFA ranking). Los partidos marcados <b>🤖 auto</b> tienen comentario generado a partir de esos datos, no un análisis manual. No constituye asesoramiento de apuestas.
+  </div>
+</section>
+
+<!-- ══════════════ TAB: MONTE CARLO ══════════════ -->
+<section class="section" id="montecarlo">
+  <div class="sec-label">
+    Simulación Monte Carlo — Modelo de Poisson bivariado · 25.000 iteraciones por grupo
+    <span>Dixon &amp; Coles (1997) · Maher (1982) · Hvattum &amp; Arntzen (2010)</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px" id="mcMethodBox">
+    <div class="card" style="border-color:rgba(0,212,255,.3)">
+      <h3>⚙️ Modelo Poisson</h3>
+      <div style="font-size:.75rem;color:var(--muted);line-height:1.6">
+        Los goles de cada equipo se modelan como variables de Poisson independientes con parámetro λ derivado de su fuerza de ataque, debilidad defensiva del rival y promedio global. Cada combinación de marcador exacto tiene probabilidad calculada, de ahí salen W/D/L.
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(124,58,237,.3)">
+      <h3>🎲 Monte Carlo</h3>
+      <div style="font-size:.75rem;color:var(--muted);line-height:1.6">
+        Se simula cada grupo 25.000 veces. En cada simulación, los goles de cada partido se sortean aleatoriamente con la distribución de Poisson. Se registra la tabla final de cada simulación. La probabilidad de clasificar = (veces que terminó 1° o 2°) / 25.000.
+      </div>
+    </div>
+    <div class="card" style="border-color:rgba(249,115,22,.3)">
+      <h3>📐 Parámetros del equipo</h3>
+      <div style="font-size:.75rem;color:var(--muted);line-height:1.6">
+        Para CONMEBOL: 60% datos reales (últimos 18 partidos oficiales) + 40% Elo estimado. Para el resto: fórmula Elo → λ calibrada contra benchmarks conocidos. λ_match = att_A × def_B / baseline_global (1.2 goles).
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="mcGroupFilter"></div>
+
+  <div id="mcContainer"></div>
+
+  <div style="margin-top:24px">
+    <div class="sec-label">Marcadores más probables — Partidos CONMEBOL pendientes <span>(modelo Poisson)</span></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px" id="mcScoreMatrices"></div>
+  </div>
+
+  <div class="disclaimer" style="margin-top:20px">
+    ⚠️ Modelo estadístico propio basado en distribución de Poisson bivariada (Maher 1982, Dixon-Coles 1997). Los parámetros se estiman de datos reales de eliminatorias y ratings Elo. No constituye predicción oficial ni asesoramiento de apuestas.
+  </div>
+</section>
+
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════════
+// MASTER DATA
+// ═══════════════════════════════════════════════════
+
+const TEAMS = {
+  arg:{id:'arg',flag:'🇦🇷',name:'Argentina',short:'ARG',fifa:1,elo:2115,
+    wins:72.2,draws:11.1,losses:16.7,gf:1.78,ga:.50,xG:1.74,xGA:.75,cs:55.6,
+    poss:68,shots:13.8,conv:18,over25:33.3,over15:66.7,btts:33.3,
+    forma:['P','G','E','G','G'],
+    idxF:78,idxO:75,idxD:78,idxM:79.8,probW:65,probD:17,probL:18,
+    group:'J',groupRank:null,pts:null,played:0,
+    hotDato:'Marcó en <strong>17 de sus últimos 18 partidos oficiales (94.4%)</strong> — solo dejó de marcar ante Ecuador en el cierre eliminatorio.',
+    worldcupPath:[
+      {stage:'Grupo J',pred:'1°',prob:90},
+      {stage:'Round 32',pred:'vs 3° Grupo',prob:85},
+      {stage:'Octavos',pred:'vs 2°E/F',prob:72},
+      {stage:'Cuartos',pred:'Rival tough',prob:58},
+      {stage:'Semis',pred:'Top rival',prob:44},
+      {stage:'Final',pred:'Campeón?',prob:28},
+    ],
+    results:[
+      {d:'Sep 9, 2025',r:'Ecuador',sc:'0-1',res:'P',c:'Eliminatoria'},
+      {d:'Sep 4, 2025',r:'Venezuela',sc:'3-0',res:'G',c:'Eliminatoria'},
+      {d:'Jun 10, 2025',r:'Colombia',sc:'1-1',res:'E',c:'Eliminatoria'},
+      {d:'Jun 5, 2025',r:'Chile',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Mar 25, 2025',r:'Brasil',sc:'4-1',res:'G',c:'Eliminatoria'},
+      {d:'Mar 21, 2025',r:'Uruguay',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Nov 19, 2024',r:'Perú',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Nov 14, 2024',r:'Paraguay',sc:'1-2',res:'P',c:'Eliminatoria'},
+      {d:'Oct 15, 2024',r:'Bolivia',sc:'6-0',res:'G',c:'Eliminatoria'},
+      {d:'Oct 10, 2024',r:'Venezuela',sc:'1-1',res:'E',c:'Eliminatoria'},
+      {d:'Sep 10, 2024',r:'Colombia',sc:'1-2',res:'P',c:'Eliminatoria'},
+      {d:'Sep 5, 2024',r:'Chile',sc:'3-0',res:'G',c:'Eliminatoria'},
+      {d:'Jul 14, 2024',r:'Colombia',sc:'1-0',res:'G',c:'Copa América Final'},
+      {d:'Jul 9, 2024',r:'Canadá',sc:'2-0',res:'G',c:'Copa América SF'},
+      {d:'Jul 4, 2024',r:'Ecuador',sc:'1-1(pk)',res:'G',c:'Copa América QF'},
+      {d:'Jun 29, 2024',r:'Perú',sc:'2-0',res:'G',c:'Copa América'},
+      {d:'Jun 25, 2024',r:'Chile',sc:'1-0',res:'G',c:'Copa América'},
+      {d:'Jun 20, 2024',r:'Canadá',sc:'2-0',res:'G',c:'Copa América'},
+    ]},
+
+  bra:{id:'bra',flag:'🇧🇷',name:'Brasil',short:'BRA',fifa:6,elo:1991,
+    wins:43.8,draws:37.5,losses:18.8,gf:1.31,ga:.75,xG:null,xGA:null,cs:43.8,
+    poss:55,shots:14.3,conv:16,over25:37.5,over15:56.3,btts:43.8,
+    forma:['P','G','G','E','P'],
+    idxF:58,idxO:55,idxD:65,idxM:64.0,probW:40,probD:30,probL:30,
+    group:'C',groupRank:null,pts:1,played:1,
+    hotDato:'Acumuló <strong>6 empates en 16 partidos oficiales (37.5%)</strong> — y debuta en el Mundial con 1-1 ante Marruecos (Jun 13).',
+    worldcupPath:[
+      {stage:'Grupo C',pred:'2°',prob:75},
+      {stage:'Round 32',pred:'vs 3° Grupo',prob:68},
+      {stage:'Octavos',pred:'Rival top',prob:52},
+      {stage:'Cuartos',pred:'Top rival',prob:38},
+      {stage:'Semis',pred:'',prob:22},
+      {stage:'Final',pred:'',prob:12},
+    ],
+    results:[
+      {d:'Jun 13, 2026',r:'Marruecos',sc:'1-1',res:'E',c:'Mundial Grupo C ✅'},
+      {d:'Sep 9, 2025',r:'Bolivia',sc:'0-1',res:'P',c:'Eliminatoria'},
+      {d:'Sep 5, 2025',r:'Chile',sc:'3-0',res:'G',c:'Eliminatoria'},
+      {d:'Jun 11, 2025',r:'Paraguay',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Jun 6, 2025',r:'Ecuador',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Mar 25, 2025',r:'Argentina',sc:'1-4',res:'P',c:'Eliminatoria'},
+      {d:'Mar 20, 2025',r:'Colombia',sc:'2-1',res:'G',c:'Eliminatoria'},
+      {d:'Nov 19, 2024',r:'Uruguay',sc:'1-1',res:'E',c:'Eliminatoria'},
+      {d:'Nov 14, 2024',r:'Venezuela',sc:'1-1',res:'E',c:'Eliminatoria'},
+      {d:'Oct 16, 2024',r:'Perú',sc:'4-0',res:'G',c:'Eliminatoria'},
+      {d:'Oct 10, 2024',r:'Chile',sc:'2-1',res:'G',c:'Eliminatoria'},
+      {d:'Sep 10, 2024',r:'Paraguay',sc:'0-1',res:'P',c:'Eliminatoria'},
+      {d:'Sep 6, 2024',r:'Ecuador',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Jul 6, 2024',r:'Uruguay',sc:'0-0(pk)',res:'E',c:'Copa América QF'},
+      {d:'Jul 2, 2024',r:'Colombia',sc:'1-1',res:'E',c:'Copa América'},
+      {d:'Jun 28, 2024',r:'Paraguay',sc:'4-1',res:'G',c:'Copa América'},
+    ]},
+
+  col:{id:'col',flag:'🇨🇴',name:'Colombia',short:'COL',fifa:13,elo:1982,
+    wins:70,draws:10,losses:20,gf:2.5,ga:1.0,xG:1.56,xGA:1.04,cs:50,
+    poss:60,shots:13.1,conv:19,over25:80,over15:null,btts:50,
+    forma:['G','G','E','E','E'],
+    idxF:65,idxO:70,idxD:62,idxM:67.8,probW:55,probD:22,probL:23,
+    group:'K',groupRank:null,pts:null,played:0,
+    hotDato:'Goleó <strong>6-3 a Venezuela en Caracas</strong> y promedia <strong>2.5 goles por partido</strong> (últimos 10 oficiales) — la mayor producción ofensiva CONMEBOL.',
+    worldcupPath:[
+      {stage:'Grupo K',pred:'2°',prob:72},
+      {stage:'Round 32',pred:'vs 3° Grupo',prob:65},
+      {stage:'Octavos',pred:'Rival mid',prob:50},
+      {stage:'Cuartos',pred:'',prob:32},
+      {stage:'Semis',pred:'',prob:18},
+      {stage:'Final',pred:'',prob:9},
+    ],
+    results:[
+      {d:'Sep 9, 2025',r:'Venezuela',sc:'6-3',res:'G',c:'Eliminatoria'},
+      {d:'Sep 4, 2025',r:'Bolivia',sc:'3-0',res:'G',c:'Eliminatoria'},
+      {d:'Jun 10, 2025',r:'Argentina',sc:'1-1',res:'E',c:'Eliminatoria'},
+      {d:'Jun 6, 2025',r:'Perú',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Mar 25, 2025',r:'Uruguay',sc:'2-2',res:'E',c:'Eliminatoria'},
+      {d:'Mar 20, 2025',r:'Brasil',sc:'1-2',res:'P',c:'Eliminatoria'},
+      {d:'Nov 19, 2024',r:'Ecuador',sc:'0-1',res:'P',c:'Eliminatoria'},
+      {d:'Nov 15, 2024',r:'Uruguay',sc:'2-3',res:'P',c:'Eliminatoria'},
+      {d:'Sep 10, 2024',r:'Argentina',sc:'2-1',res:'G',c:'Eliminatoria'},
+      {d:'Sep 5, 2024',r:'Chile',sc:'4-0',res:'G',c:'Eliminatoria'},
+      {d:'Jul 14, 2024',r:'Argentina',sc:'0-1',res:'P',c:'Copa América Final'},
+      {d:'Jul 10, 2024',r:'Uruguay',sc:'1-0',res:'G',c:'Copa América SF'},
+      {d:'Jul 2, 2024',r:'Brasil',sc:'1-1',res:'E',c:'Copa América'},
+    ]},
+
+  uru:{id:'uru',flag:'🇺🇾',name:'Uruguay',short:'URU',fifa:16,elo:1890,
+    wins:50,draws:38.9,losses:11.1,gf:1.28,ga:.44,xG:null,xGA:null,cs:66.7,
+    poss:null,shots:null,conv:null,over25:27.8,over15:50,btts:22.2,
+    forma:['E','G','G','G','E'],
+    idxF:70,idxO:52,idxD:82,idxM:69.4,probW:48,probD:30,probL:22,
+    group:'H',groupRank:1,pts:1,played:1,
+    hotDato:'Mantuvo <strong>valla invicta en 12/18 partidos oficiales (66.7%)</strong> — mejor defensiva CONMEBOL. Empató <strong>1-1 ante Arabia Saudita</strong> en su debut mundialista (Jun 15); Araújo descontó en el 80\'. Enfrenta a España en su grupo.',
+    worldcupPath:[
+      {stage:'Grupo H',pred:'2°',prob:66},
+      {stage:'Round 32',pred:'vs 3° Grupo',prob:60},
+      {stage:'Octavos',pred:'Rival mid',prob:46},
+      {stage:'Cuartos',pred:'',prob:29},
+      {stage:'Semis',pred:'',prob:15},
+      {stage:'Final',pred:'',prob:7},
+    ],
+    results:[
+      {d:'Jun 15, 2026',r:'Arabia Saudita',sc:'1-1',res:'E',c:'Mundial Grupo H ✅'},
+      {d:'Sep 9, 2025',r:'Chile',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Sep 4, 2025',r:'Perú',sc:'3-0',res:'G',c:'Eliminatoria'},
+      {d:'Jun 10, 2025',r:'Venezuela',sc:'2-0',res:'G',c:'Eliminatoria'},
+      {d:'Jun 5, 2025',r:'Paraguay',sc:'2-0',res:'G',c:'Eliminatoria'},
+      {d:'Mar 25, 2025',r:'Bolivia',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Mar 21, 2025',r:'Argentina',sc:'0-1',res:'P',c:'Eliminatoria'},
+      {d:'Nov 19, 2024',r:'Brasil',sc:'1-1',res:'E',c:'Eliminatoria'},
+      {d:'Nov 15, 2024',r:'Colombia',sc:'3-2',res:'G',c:'Eliminatoria'},
+      {d:'Oct 15, 2024',r:'Ecuador',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Oct 11, 2024',r:'Perú',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Sep 10, 2024',r:'Venezuela',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Sep 6, 2024',r:'Paraguay',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Jul 13, 2024',r:'Canadá',sc:'2-2',res:'E',c:'Copa América 3°'},
+      {d:'Jul 10, 2024',r:'Colombia',sc:'0-1',res:'P',c:'Copa América SF'},
+      {d:'Jul 6, 2024',r:'Brasil',sc:'0-0(pk)',res:'G',c:'Copa América QF'},
+      {d:'Jul 1, 2024',r:'EE.UU.',sc:'1-0',res:'G',c:'Copa América'},
+      {d:'Jun 27, 2024',r:'Bolivia',sc:'5-0',res:'G',c:'Copa América'},
+      {d:'Jun 23, 2024',r:'Panamá',sc:'3-1',res:'G',c:'Copa América'},
+    ]},
+
+  ecu:{id:'ecu',flag:'🇪🇨',name:'Ecuador',short:'ECU',fifa:23,elo:1820,
+    wins:38,draws:38,losses:23,gf:.85,ga:.70,xG:null,xGA:null,cs:55,
+    poss:null,shots:null,conv:null,over25:20,over15:30,btts:20,
+    forma:['G','E','E','G','E'],
+    idxF:55,idxO:45,idxD:65,idxM:56.7,probW:38,probD:32,probL:30,
+    group:'E',groupRank:3,pts:0,played:1,
+    hotDato:'Único equipo CONMEBOL en derrotar a <strong>Argentina (1-0)</strong> durante Eliminatorias — clasifica pese a deducción de 3 puntos. Cayó <strong>0-1 ante Costa de Marfil</strong> en su debut mundialista (Jun 14) y ahora necesita ganarle a Curazao para mantener vivas sus chances.',
+    worldcupPath:[
+      {stage:'Grupo E',pred:'3°',prob:28},
+      {stage:'Round 32',pred:'vs 3° Grupo',prob:20},
+      {stage:'Octavos',pred:'',prob:11},
+      {stage:'Cuartos',pred:'',prob:6},
+      {stage:'Semis',pred:'',prob:2},
+      {stage:'Final',pred:'',prob:1},
+    ],
+    results:[
+      {d:'Jun 14, 2026',r:'C. Marfil',sc:'0-1',res:'P',c:'Mundial Grupo E ✅'},
+      {d:'Sep 9, 2025',r:'Argentina',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Sep 4, 2025',r:'Paraguay',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Jun 6, 2025',r:'Brasil',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Nov 19, 2024',r:'Colombia',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Oct 15, 2024',r:'Uruguay',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Sep 6, 2024',r:'Brasil',sc:'0-1',res:'P',c:'Eliminatoria'},
+      {d:'Jul 4, 2024',r:'Argentina',sc:'1-1(pk)',res:'E',c:'Copa América QF'},
+      {d:'Jul 1, 2024',r:'México',sc:'0-0',res:'E',c:'Copa América'},
+      {d:'Jun 30, 2024',r:'Jamaica',sc:'3-1',res:'G',c:'Copa América'},
+      {d:'Jun 24, 2024',r:'Venezuela',sc:'1-2',res:'P',c:'Copa América'},
+    ]},
+
+  par:{id:'par',flag:'🇵🇾',name:'Paraguay',short:'PAR',fifa:41,elo:1750,
+    wins:40,draws:20,losses:40,gf:1.30,ga:1.30,xG:1.22,xGA:1.15,cs:40,
+    poss:36,shots:10.7,conv:12,over25:60,over15:null,btts:50,
+    forma:['G','G','P','G','P'],
+    idxF:48,idxO:50,idxD:52,idxM:48.2,probW:33,probD:28,probL:39,
+    group:'D',groupRank:4,pts:0,played:1,
+    hotDato:'<strong>Perdió 1-4 ante USA</strong> en el debut mundialista — la peor derrota de su campaña. Necesita ganar sus próximos 2 partidos para tener chances de clasificar.',
+    worldcupPath:[
+      {stage:'Grupo D',pred:'4°',prob:8},
+      {stage:'Round 32',pred:'Eliminiación probable',prob:5},
+      {stage:'Octavos',pred:'',prob:2},
+      {stage:'Cuartos',pred:'',prob:1},
+      {stage:'Semis',pred:'',prob:0},
+      {stage:'Final',pred:'',prob:0},
+    ],
+    results:[
+      {d:'Jun 12, 2026',r:'USA',sc:'1-4',res:'P',c:'Mundial Grupo D ✅'},
+      {d:'Sep 9, 2025',r:'Perú',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Sep 4, 2025',r:'Ecuador',sc:'0-0',res:'E',c:'Eliminatoria'},
+      {d:'Jun 11, 2025',r:'Brasil',sc:'0-1',res:'P',c:'Eliminatoria'},
+      {d:'Jun 5, 2025',r:'Uruguay',sc:'0-2',res:'P',c:'Eliminatoria'},
+      {d:'Nov 14, 2024',r:'Argentina',sc:'2-1',res:'G',c:'Eliminatoria'},
+      {d:'Sep 10, 2024',r:'Brasil',sc:'1-0',res:'G',c:'Eliminatoria'},
+      {d:'Jul 2, 2024',r:'Brasil',sc:'1-4',res:'P',c:'Copa América'},
+    ]}
+};
+
+// ═══════════════════════════════════════════════════
+// GROUPS DATA
+// ═══════════════════════════════════════════════════
+
+const GROUPS = [
+  {
+    id:'A', label:'Grupo A', conmebol:[],
+    teams:[
+      {id:'mex',flag:'🇲🇽',name:'México',fifa:14,pts:3,pj:1,pg:1,pe:0,pp:0,gf:2,gc:0,elo:1900,csProb:82},
+      {id:'kor',flag:'🇰🇷',name:'Corea del Sur',fifa:24,pts:3,pj:1,pg:1,pe:0,pp:0,gf:2,gc:1,elo:1840,csProb:65},
+      {id:'cze',flag:'🇨🇿',name:'Chequia',fifa:36,pts:0,pj:1,pg:0,pe:0,pp:1,gf:1,gc:2,elo:1820,csProb:35},
+      {id:'rsa',flag:'🇿🇦',name:'Sudáfrica',fifa:64,pts:0,pj:1,pg:0,pe:0,pp:1,gf:0,gc:2,elo:1640,csProb:18},
+    ],
+    matches:[
+      {d:'Jun 11',t1:'🇲🇽 México',t2:'🇿🇦 Sudáfrica',sc:'2 - 0',state:'played',pw:0,pd:0,pl:0,venue:'Estadio Azteca (México)'},
+      {d:'Jun 11',t1:'🇰🇷 Corea del Sur',t2:'🇨🇿 Chequia',sc:'2 - 1',state:'played',pw:0,pd:0,pl:0,venue:'SoFi Stad. (Los Ángeles)'},
+      {d:'Jun 18',t1:'🇨🇿 Chequia',t2:'🇿🇦 Sudáfrica',sc:'vs',state:'future',pw:50,pd:28,pl:22,venue:'Mercedes-Benz (Atlanta)'},
+      {d:'Jun 18',t1:'🇲🇽 México',t2:'🇰🇷 Corea del Sur',sc:'vs',state:'future',pw:52,pd:28,pl:20,venue:'Estadio Akron (Guadalajara)'},
+      {d:'Jun 24',t1:'🇨🇿 Chequia',t2:'🇲🇽 México',sc:'vs',state:'future',pw:22,pd:26,pl:52,venue:'Estadio Azteca (México)'},
+      {d:'Jun 24',t1:'🇿🇦 Sudáfrica',t2:'🇰🇷 Corea del Sur',sc:'vs',state:'future',pw:22,pd:28,pl:50,venue:'Estadio BBVA (Monterrey)'},
+    ],
+    projStandings:[
+      {pos:1,id:'mex',flag:'🇲🇽',name:'México',pts:'6-9',csProb:82},
+      {pos:2,id:'kor',flag:'🇰🇷',name:'Corea del Sur',pts:'4-6',csProb:65},
+      {pos:3,id:'cze',flag:'🇨🇿',name:'Chequia',pts:'3',csProb:35},
+      {pos:4,id:'rsa',flag:'🇿🇦',name:'Sudáfrica',pts:'0-3',csProb:18},
+    ]
+  },
+  {
+    id:'B', label:'Grupo B', conmebol:[],
+    teams:[
+      {id:'can',flag:'🇨🇦',name:'Canadá',fifa:30,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1875,csProb:65},
+      {id:'sui',flag:'🇨🇭',name:'Suiza',fifa:18,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1910,csProb:72},
+      {id:'bih',flag:'🇧🇦',name:'Bosnia',fifa:62,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1720,csProb:38},
+      {id:'qat',flag:'🇶🇦',name:'Qatar',fifa:58,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1690,csProb:22},
+    ],
+    matches:[
+      {d:'Jun 12',t1:'🇨🇦 Canadá',t2:'🇧🇦 Bosnia',sc:'1 - 1',state:'played',pw:0,pd:0,pl:0,venue:'BC Place (Vancouver)'},
+      {d:'Jun 13',t1:'🇶🇦 Qatar',t2:'🇨🇭 Suiza',sc:'1 - 1',state:'played',pw:0,pd:0,pl:0,venue:'Levi\'s Stad. (Santa Clara)'},
+      {d:'Jun 18',t1:'🇨🇭 Suiza',t2:'🇧🇦 Bosnia',sc:'vs',state:'future',pw:48,pd:30,pl:22,venue:'SoFi Stad. (Los Ángeles)'},
+      {d:'Jun 18',t1:'🇨🇦 Canadá',t2:'🇶🇦 Qatar',sc:'vs',state:'future',pw:55,pd:28,pl:17,venue:'BC Place (Vancouver)'},
+      {d:'Jun 24',t1:'🇨🇭 Suiza',t2:'🇨🇦 Canadá',sc:'vs',state:'future',pw:40,pd:30,pl:30,venue:'BC Place (Vancouver)'},
+      {d:'Jun 24',t1:'🇧🇦 Bosnia',t2:'🇶🇦 Qatar',sc:'vs',state:'future',pw:50,pd:28,pl:22,venue:'Lumen Field (Seattle)'},
+    ],
+    projStandings:[
+      {pos:1,id:'sui',flag:'🇨🇭',name:'Suiza',pts:'4-7',csProb:72},
+      {pos:2,id:'can',flag:'🇨🇦',name:'Canadá',pts:'4-6',csProb:65},
+      {pos:3,id:'bih',flag:'🇧🇦',name:'Bosnia',pts:'2-4',csProb:38},
+      {pos:4,id:'qat',flag:'🇶🇦',name:'Qatar',pts:'1-3',csProb:22},
+    ]
+  },
+  {
+    id:'C', label:'Grupo C', conmebol:['bra'],
+    teams:[
+      {id:'bra',flag:'🇧🇷',name:'Brasil',fifa:6,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1991,csProb:75},
+      {id:'mar',flag:'🇲🇦',name:'Marruecos',fifa:14,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1862,csProb:45},
+      {id:'sco',flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name:'Escocia',fifa:39,pts:3,pj:1,pg:1,pe:0,pp:0,gf:1,gc:0,elo:1740,csProb:25},
+      {id:'hai',flag:'🇭🇹',name:'Haití',fifa:83,pts:0,pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,elo:1490,csProb:5},
+    ],
+    matches:[
+      {d:'Jun 13',t1:'🇧🇷 Brasil',t2:'🇲🇦 Marruecos',sc:'1 - 1',state:'played',pw:0,pd:0,pl:0,venue:''},
+      {d:'Jun 13',t1:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',t2:'🇭🇹 Haití',sc:'1 - 0',state:'played',pw:0,pd:0,pl:0,venue:''},
+      {d:'Jun 19',t1:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',t2:'🇲🇦 Marruecos',sc:'vs',state:'future',pw:35,pd:32,pl:33,venue:'Gillette Stad. (Boston)'},
+      {d:'Jun 19',t1:'🇧🇷 Brasil',t2:'🇭🇹 Haití',sc:'vs',state:'future',pw:82,pd:13,pl:5,venue:'Lincoln Fin. Field (Filadelfia)'},
+      {d:'Jun 24',t1:'🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia',t2:'🇧🇷 Brasil',sc:'vs',state:'future',pw:22,pd:28,pl:50,venue:'Hard Rock Stad. (Miami)'},
+      {d:'Jun 24',t1:'🇲🇦 Marruecos',t2:'🇭🇹 Haití',sc:'vs',state:'future',pw:70,pd:20,pl:10,venue:'Mercedes-Benz (Atlanta)'},
+    ],
+    projStandings:[
+      {pos:1,id:'sco',flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name:'Escocia',pts:'4-6',csProb:35},
+      {pos:2,id:'bra',flag:'🇧🇷',name:'Brasil',pts:'4-7',csProb:72},
+      {pos:3,id:'mar',flag:'🇲🇦',name:'Marruecos',pts:'2-5',csProb:42},
+      {pos:4,id:'hai',flag:'🇭🇹',name:'Haití',pts:'0',csProb:3},
+    ]
+  },
+  {
+    id:'D', label:'Grupo D', conmebol:['par'],
+    teams:[
+      {id:'usa',flag:'🇺🇸',name:'USA',fifa:17,pts:3,pj:1,pg:1,pe:0,pp:0,gf:4,gc:1,elo:1896,csProb:60},
+      {id:'aus',flag:'🇦🇺',name:'Australia',fifa:22,pts:3,pj:1,pg:1,pe:0,pp:0,gf:2,gc:0,elo:1840,csProb:40},
+      {id:'tur',flag:'🇹🇷',name:'Turquía',fifa:35,pts:0,pj:1,pg:0,pe:0,pp:1,gf:0,gc:2,elo:1798,csProb:28},
+      {id:'par',flag:'🇵🇾',name:'Paraguay',fifa:41,pts:0,pj:1,pg:0,pe:0,pp:1,gf:1,gc:4,elo:1750,csProb:18},
+    ],
+    matches:[
+      {d:'Jun 12',t1:'🇺🇸 USA',t2:'🇵🇾 Paraguay',sc:'4 - 1',state:'played',pw:0,pd:0,pl:0,venue:''},
+      {d:'Jun 13',t1:'🇦🇺 Australia',t2:'🇹🇷 Turquía',sc:'2 - 0',state:'played',pw:0,pd:0,pl:0,venue:''},
+      {d:'Jun 19',t1:'🇺🇸 USA',t2:'🇦🇺 Australia',sc:'vs',state:'future',pw:45,pd:30,pl:25,venue:'Lumen Field (Seattle)'},
+      {d:'Jun 19',t1:'🇹🇷 Turquía',t2:'🇵🇾 Paraguay',sc:'vs',state:'future',pw:42,pd:28,pl:30,venue:'Levi\'s Stad. (Santa Clara)'},
+      {d:'Jun 25',t1:'🇹🇷 Turquía',t2:'🇺🇸 USA',sc:'vs',state:'future',pw:28,pd:30,pl:42,venue:'SoFi Stad. (Los Ángeles)'},
+      {d:'Jun 25',t1:'🇵🇾 Paraguay',t2:'🇦🇺 Australia',sc:'vs',state:'future',pw:35,pd:28,pl:37,venue:'Levi\'s Stad. (Santa Clara)'},
+    ],
+    projStandings:[
+      {pos:1,id:'usa',flag:'🇺🇸',name:'USA',pts:'7-9',csProb:85},
+      {pos:2,id:'aus',flag:'🇦🇺',name:'Australia',pts:'4-7',csProb:62},
+      {pos:3,id:'tur',flag:'🇹🇷',name:'Turquía',pts:'3',csProb:30},
+      {pos:4,id:'par',flag:'🇵🇾',name:'Paraguay',pts:'0-3',csProb:8},
+    ]
+  },
+  {
+    id:'E', label:'Grupo E', conmebol:['ecu'],
+    teams:[
+      {id:'ger',flag:'🇩🇪',name:'Alemania',fifa:3,pts:3,pj:1,pg:1,pe:0,pp:0,gf:7,gc:1,elo:2000,csProb:96},
+      {id:'civ',flag:'🇨🇮',name:'C. Marfil',fifa:48,pts:3,pj:1,pg:1,pe:0,pp:0,gf:1,gc:0,elo:1790,csProb:55},
+      {id:'ecu',flag:'🇪🇨',name:'Ecuador',fifa:23,pts:0,pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,elo:1820,csProb:28},
+      {id:'cur',flag:'🇨🇼',name:'Curazao',fifa:94,pts:0,pj:1,pg:0,pe:0,pp:1,gf:1,gc:7,elo:1540,csProb:2},
+    ],
+    matches:[
+      {d:'Jun 14',t1:'🇩🇪 Alemania',t2:'🇨🇼 Curazao',sc:'7 - 1',state:'played',pw:0,pd:0,pl:0,venue:'NRG Stad. (Houston)'},
+      {d:'Jun 14',t1:'🇨🇮 C. Marfil',t2:'🇪🇨 Ecuador',sc:'1 - 0',state:'played',pw:0,pd:0,pl:0,venue:'Lincoln Fin. Field (Filadelfia)'},
+      {d:'Jun 20',t1:'🇩🇪 Alemania',t2:'🇨🇮 C. Marfil',sc:'vs',state:'future',pw:65,pd:22,pl:13,venue:'BMO Field (Toronto)'},
+      {d:'Jun 20',t1:'🇪🇨 Ecuador',t2:'🇨🇼 Curazao',sc:'vs',state:'future',pw:72,pd:18,pl:10,venue:'Arrowhead Stad. (Kansas City)'},
+      {d:'Jun 25',t1:'🇨🇼 Curazao',t2:'🇨🇮 C. Marfil',sc:'vs',state:'future',pw:22,pd:28,pl:50,venue:'Lincoln Fin. Field (Filadelfia)'},
+      {d:'Jun 25',t1:'🇪🇨 Ecuador',t2:'🇩🇪 Alemania',sc:'vs',state:'future',pw:15,pd:22,pl:63,venue:'MetLife Stad. (Nueva York)'},
+    ],
+    projStandings:[
+      {pos:1,id:'ger',flag:'🇩🇪',name:'Alemania',pts:'9',csProb:99},
+      {pos:2,id:'civ',flag:'🇨🇮',name:'C. Marfil',pts:'4-7',csProb:58},
+      {pos:3,id:'ecu',flag:'🇪🇨',name:'Ecuador',pts:'3-6',csProb:32},
+      {pos:4,id:'cur',flag:'🇨🇼',name:'Curazao',pts:'0-1',csProb:1},
+    ]
+  },
+  {
+    id:'H', label:'Grupo H', conmebol:['uru'],
+    teams:[
+      {id:'esp',flag:'🇪🇸',name:'España',fifa:2,pts:1,pj:1,pg:0,pe:1,pp:0,gf:0,gc:0,elo:2114,csProb:78},
+      {id:'uru',flag:'🇺🇾',name:'Uruguay',fifa:16,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1890,csProb:65},
+      {id:'ksa',flag:'🇸🇦',name:'Arabia Saudita',fifa:56,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1720,csProb:28},
+      {id:'cpv',flag:'🇨🇻',name:'Cabo Verde',fifa:73,pts:1,pj:1,pg:0,pe:1,pp:0,gf:0,gc:0,elo:1620,csProb:20},
+    ],
+    matches:[
+      {d:'Jun 15',t1:'🇪🇸 España',t2:'🇨🇻 Cabo Verde',sc:'0 - 0',state:'played',pw:0,pd:0,pl:0,venue:'Mercedes-Benz (Atlanta)'},
+      {d:'Jun 15',t1:'🇸🇦 A. Saudita',t2:'🇺🇾 Uruguay',sc:'1 - 1',state:'played',pw:0,pd:0,pl:0,venue:'Hard Rock Stad. (Miami)'},
+      {d:'Jun 21',t1:'🇪🇸 España',t2:'🇸🇦 A. Saudita',sc:'vs',state:'future',pw:80,pd:14,pl:6,venue:'Mercedes-Benz (Atlanta)'},
+      {d:'Jun 21',t1:'🇺🇾 Uruguay',t2:'🇨🇻 Cabo Verde',sc:'vs',state:'future',pw:75,pd:18,pl:7,venue:'Hard Rock Stad. (Miami)'},
+      {d:'Jun 26',t1:'🇨🇻 Cabo Verde',t2:'🇸🇦 A. Saudita',sc:'vs',state:'future',pw:38,pd:28,pl:34,venue:'NRG Stad. (Houston)'},
+      {d:'Jun 26',t1:'🇺🇾 Uruguay',t2:'🇪🇸 España',sc:'vs',state:'future',pw:20,pd:22,pl:58,venue:'Estadio Akron (Guadalajara)'},
+    ],
+    projStandings:[
+      {pos:1,id:'esp',flag:'🇪🇸',name:'España',pts:'7-9',csProb:92},
+      {pos:2,id:'uru',flag:'🇺🇾',name:'Uruguay',pts:'4-7',csProb:66},
+      {pos:3,id:'ksa',flag:'🇸🇦',name:'A. Saudita',pts:'2-4',csProb:26},
+      {pos:4,id:'cpv',flag:'🇨🇻',name:'Cabo Verde',pts:'1-3',csProb:18},
+    ]
+  },
+  {
+    id:'J', label:'Grupo J', conmebol:['arg'],
+    teams:[
+      {id:'arg',flag:'🇦🇷',name:'Argentina',fifa:1,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:2115,csProb:90},
+      {id:'aut',flag:'🇦🇹',name:'Austria',fifa:25,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:1875,csProb:55},
+      {id:'alg',flag:'🇩🇿',name:'Argelia',fifa:33,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:1810,csProb:35},
+      {id:'jor',flag:'🇯🇴',name:'Jordania',fifa:87,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:1570,csProb:5},
+    ],
+    matches:[
+      {d:'Jun 16',t1:'🇦🇷 Argentina',t2:'🇩🇿 Argelia',sc:'vs',state:'future',pw:82,pd:12,pl:6,venue:'Arrowhead Stad. (Kansas City)'},
+      {d:'Jun 16',t1:'🇦🇹 Austria',t2:'🇯🇴 Jordania',sc:'vs',state:'future',pw:70,pd:20,pl:10,venue:'Levi\'s Stad. (Santa Clara)'},
+      {d:'Jun 22',t1:'🇦🇷 Argentina',t2:'🇦🇹 Austria',sc:'vs',state:'future',pw:72,pd:18,pl:10,venue:'AT&T Stad. (Dallas)'},
+      {d:'Jun 22',t1:'🇯🇴 Jordania',t2:'🇩🇿 Argelia',sc:'vs',state:'future',pw:30,pd:32,pl:38,venue:'Levi\'s Stad. (Santa Clara)'},
+      {d:'Jun 27',t1:'🇯🇴 Jordania',t2:'🇦🇷 Argentina',sc:'vs',state:'future',pw:5,pd:12,pl:83,venue:'AT&T Stad. (Dallas)'},
+      {d:'Jun 27',t1:'🇩🇿 Argelia',t2:'🇦🇹 Austria',sc:'vs',state:'future',pw:35,pd:32,pl:33,venue:'Arrowhead Stad. (Kansas City)'},
+    ],
+    projStandings:[
+      {pos:1,id:'arg',flag:'🇦🇷',name:'Argentina',pts:'9',csProb:97},
+      {pos:2,id:'aut',flag:'🇦🇹',name:'Austria',pts:'4-6',csProb:55},
+      {pos:3,id:'alg',flag:'🇩🇿',name:'Argelia',pts:'3-4',csProb:32},
+      {pos:4,id:'jor',flag:'🇯🇴',name:'Jordania',pts:'0',csProb:3},
+    ]
+  },
+  {
+    id:'K', label:'Grupo K', conmebol:['col'],
+    teams:[
+      {id:'por',flag:'🇵🇹',name:'Portugal',fifa:5,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:2050,csProb:88},
+      {id:'col',flag:'🇨🇴',name:'Colombia',fifa:13,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:1982,csProb:72},
+      {id:'cod',flag:'🇨🇩',name:'Congo DR',fifa:52,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:1660,csProb:25},
+      {id:'uzb',flag:'🇺🇿',name:'Uzbekistán',fifa:61,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:1730,csProb:18},
+    ],
+    matches:[
+      {d:'Jun 17',t1:'🇵🇹 Portugal',t2:'🇨🇩 Congo DR',sc:'vs',state:'future',pw:78,pd:14,pl:8,venue:'NRG Stad. (Houston)'},
+      {d:'Jun 17',t1:'🇺🇿 Uzbekistán',t2:'🇨🇴 Colombia',sc:'vs',state:'future',pw:22,pd:25,pl:53,venue:'Estadio Azteca (Ciudad de México)'},
+      {d:'Jun 23',t1:'🇵🇹 Portugal',t2:'🇺🇿 Uzbekistán',sc:'vs',state:'future',pw:80,pd:14,pl:6,venue:'NRG Stad. (Houston)'},
+      {d:'Jun 23',t1:'🇨🇴 Colombia',t2:'🇨🇩 Congo DR',sc:'vs',state:'future',pw:62,pd:22,pl:16,venue:'Estadio Akron (Guadalajara)'},
+      {d:'Jun 27',t1:'🇨🇴 Colombia',t2:'🇵🇹 Portugal',sc:'vs',state:'future',pw:22,pd:25,pl:53,venue:'Hard Rock Stad. (Miami)'},
+      {d:'Jun 27',t1:'🇨🇩 Congo DR',t2:'🇺🇿 Uzbekistán',sc:'vs',state:'future',pw:42,pd:28,pl:30,venue:'Mercedes-Benz (Atlanta)'},
+    ],
+    projStandings:[
+      {pos:1,id:'por',flag:'🇵🇹',name:'Portugal',pts:'9',csProb:92},
+      {pos:2,id:'col',flag:'🇨🇴',name:'Colombia',pts:'4-6',csProb:72},
+      {pos:3,id:'cod',flag:'🇨🇩',name:'Congo DR',pts:'1-3',csProb:22},
+      {pos:4,id:'uzb',flag:'🇺🇿',name:'Uzbekistán',pts:'0-3',csProb:18},
+    ]
+  },
+  {
+    id:'F', label:'Grupo F', conmebol:[],
+    teams:[
+      {id:'ned',flag:'🇳🇱',name:'Países Bajos',fifa:7,pts:1,pj:1,pg:0,pe:1,pp:0,gf:2,gc:2,elo:2020,csProb:80},
+      {id:'jpn',flag:'🇯🇵',name:'Japón',fifa:20,pts:1,pj:1,pg:0,pe:1,pp:0,gf:2,gc:2,elo:1900,csProb:55},
+      {id:'swe',flag:'🇸🇪',name:'Suecia',fifa:26,pts:3,pj:1,pg:1,pe:0,pp:0,gf:5,gc:1,elo:1880,csProb:75},
+      {id:'tun',flag:'🇹🇳',name:'Túnez',fifa:35,pts:0,pj:1,pg:0,pe:0,pp:1,gf:1,gc:5,elo:1780,csProb:8},
+    ],
+    matches:[
+      {d:'Jun 14',t1:'🇳🇱 Países Bajos',t2:'🇯🇵 Japón',sc:'2 - 2',state:'played',pw:0,pd:0,pl:0,venue:'AT&T Stad. (Dallas)'},
+      {d:'Jun 14',t1:'🇸🇪 Suecia',t2:'🇹🇳 Túnez',sc:'5 - 1',state:'played',pw:0,pd:0,pl:0,venue:'Estadio BBVA (Monterrey)'},
+      {d:'Jun 20',t1:'🇳🇱 Países Bajos',t2:'🇸🇪 Suecia',sc:'vs',state:'future',pw:58,pd:26,pl:16,venue:'NRG Stad. (Houston)'},
+      {d:'Jun 20',t1:'🇹🇳 Túnez',t2:'🇯🇵 Japón',sc:'vs',state:'future',pw:30,pd:32,pl:38,venue:'Estadio BBVA (Monterrey)'},
+      {d:'Jun 25',t1:'🇯🇵 Japón',t2:'🇸🇪 Suecia',sc:'vs',state:'future',pw:48,pd:30,pl:22,venue:'AT&T Stad. (Dallas)'},
+      {d:'Jun 25',t1:'🇹🇳 Túnez',t2:'🇳🇱 Países Bajos',sc:'vs',state:'future',pw:12,pd:22,pl:66,venue:'Arrowhead Stad. (Kansas City)'},
+    ],
+    projStandings:[
+      {pos:1,id:'swe',flag:'🇸🇪',name:'Suecia',pts:'6-9',csProb:80},
+      {pos:2,id:'ned',flag:'🇳🇱',name:'Países Bajos',pts:'4-7',csProb:72},
+      {pos:3,id:'jpn',flag:'🇯🇵',name:'Japón',pts:'4-6',csProb:48},
+      {pos:4,id:'tun',flag:'🇹🇳',name:'Túnez',pts:'0-3',csProb:8},
+    ]
+  },
+  {
+    id:'G', label:'Grupo G', conmebol:[],
+    teams:[
+      {id:'bel',flag:'🇧🇪',name:'Bélgica',fifa:8,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1980,csProb:78},
+      {id:'egy',flag:'🇪🇬',name:'Egipto',fifa:32,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1780,csProb:48},
+      {id:'iri',flag:'🇮🇷',name:'Irán',fifa:28,pts:1,pj:1,pg:0,pe:1,pp:0,gf:2,gc:2,elo:1820,csProb:55},
+      {id:'nzl',flag:'🇳🇿',name:'Nueva Zelanda',fifa:88,pts:1,pj:1,pg:0,pe:1,pp:0,gf:2,gc:2,elo:1620,csProb:20},
+    ],
+    matches:[
+      {d:'Jun 15',t1:'🇧🇪 Bélgica',t2:'🇪🇬 Egipto',sc:'1 - 1',state:'played',pw:0,pd:0,pl:0,venue:'Lumen Field (Seattle)'},
+      {d:'Jun 15',t1:'🇮🇷 Irán',t2:'🇳🇿 Nueva Zelanda',sc:'2 - 2',state:'played',pw:0,pd:0,pl:0,venue:'SoFi Stad. (Los Ángeles)'},
+      {d:'Jun 21',t1:'🇧🇪 Bélgica',t2:'🇮🇷 Irán',sc:'vs',state:'future',pw:72,pd:18,pl:10,venue:'SoFi Stad. (Los Ángeles)'},
+      {d:'Jun 21',t1:'🇳🇿 Nueva Zelanda',t2:'🇪🇬 Egipto',sc:'vs',state:'future',pw:25,pd:32,pl:43,venue:'BC Place (Vancouver)'},
+      {d:'Jun 26',t1:'🇪🇬 Egipto',t2:'🇮🇷 Irán',sc:'vs',state:'future',pw:38,pd:32,pl:30,venue:'Lumen Field (Seattle)'},
+      {d:'Jun 26',t1:'🇳🇿 Nueva Zelanda',t2:'🇧🇪 Bélgica',sc:'vs',state:'future',pw:10,pd:18,pl:72,venue:'BC Place (Vancouver)'},
+    ],
+    projStandings:[
+      {pos:1,id:'nzl',flag:'🇳🇿',name:'Nueva Zelanda',pts:'1-7',csProb:20},
+      {pos:2,id:'iri',flag:'🇮🇷',name:'Irán',pts:'1-7',csProb:55},
+      {pos:3,id:'bel',flag:'🇧🇪',name:'Bélgica',pts:'1-7',csProb:78},
+      {pos:4,id:'egy',flag:'🇪🇬',name:'Egipto',pts:'1-7',csProb:48},
+    ]
+  },
+  {
+    id:'I', label:'Grupo I', conmebol:[],
+    teams:[
+      {id:'fra',flag:'🇫🇷',name:'Francia',fifa:3,pts:3,pj:1,pg:1,pe:0,pp:0,gf:3,gc:1,elo:2060,csProb:92},
+      {id:'nor',flag:'🇳🇴',name:'Noruega',fifa:27,pts:3,pj:1,pg:1,pe:0,pp:0,gf:4,gc:1,elo:1840,csProb:80},
+      {id:'sen',flag:'🇸🇳',name:'Senegal',fifa:18,pts:0,pj:1,pg:0,pe:0,pp:1,gf:1,gc:3,elo:1870,csProb:28},
+      {id:'irq',flag:'🇮🇶',name:'Irak',fifa:53,pts:0,pj:1,pg:0,pe:0,pp:1,gf:1,gc:4,elo:1700,csProb:6},
+    ],
+    matches:[
+      {d:'Jun 16',t1:'🇫🇷 Francia',t2:'🇸🇳 Senegal',sc:'3 - 1',state:'played',pw:0,pd:0,pl:0,venue:'MetLife Stad. (Nueva Jersey)'},
+      {d:'Jun 16',t1:'🇮🇶 Irak',t2:'🇳🇴 Noruega',sc:'1 - 4',state:'played',pw:0,pd:0,pl:0,venue:'Gillette Stad. (Boston)'},
+      {d:'Jun 22',t1:'🇫🇷 Francia',t2:'🇮🇶 Irak',sc:'vs',state:'future',pw:85,pd:10,pl:5,venue:'Lincoln Fin. Field (Filadelfia)'},
+      {d:'Jun 22',t1:'🇳🇴 Noruega',t2:'🇸🇳 Senegal',sc:'vs',state:'future',pw:45,pd:32,pl:23,venue:'MetLife Stad. (Nueva Jersey)'},
+      {d:'Jun 26',t1:'🇳🇴 Noruega',t2:'🇫🇷 Francia',sc:'vs',state:'future',pw:20,pd:26,pl:54,venue:'Gillette Stad. (Boston)'},
+      {d:'Jun 26',t1:'🇸🇳 Senegal',t2:'🇮🇶 Irak',sc:'vs',state:'future',pw:60,pd:26,pl:14,venue:'BMO Field (Toronto)'},
+    ],
+    projStandings:[
+      {pos:1,id:'nor',flag:'🇳🇴',name:'Noruega',pts:'3-9',csProb:80},
+      {pos:2,id:'fra',flag:'🇫🇷',name:'Francia',pts:'3-9',csProb:92},
+      {pos:3,id:'sen',flag:'🇸🇳',name:'Senegal',pts:'0-6',csProb:28},
+      {pos:4,id:'irq',flag:'🇮🇶',name:'Irak',pts:'0-6',csProb:6},
+    ]
+  },
+  {
+    id:'L', label:'Grupo L', conmebol:[],
+    teams:[
+      {id:'eng',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name:'Inglaterra',fifa:4,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:2040,csProb:88},
+      {id:'cro',flag:'🇭🇷',name:'Croacia',fifa:12,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:1880,csProb:58},
+      {id:'gha',flag:'🇬🇭',name:'Ghana',fifa:60,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:1730,csProb:38},
+      {id:'pan',flag:'🇵🇦',name:'Panamá',fifa:72,pts:null,pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,elo:1660,csProb:18},
+    ],
+    matches:[
+      {d:'Jun 17',t1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',t2:'🇭🇷 Croacia',sc:'vs',state:'future',pw:62,pd:24,pl:14,venue:'SoFi Stad. (Los Ángeles)'},
+      {d:'Jun 17',t1:'🇬🇭 Ghana',t2:'🇵🇦 Panamá',sc:'vs',state:'future',pw:50,pd:28,pl:22,venue:'Arrowhead Stad. (Kansas City)'},
+      {d:'Jun 23',t1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',t2:'🇬🇭 Ghana',sc:'vs',state:'future',pw:72,pd:18,pl:10,venue:'NRG Stad. (Houston)'},
+      {d:'Jun 23',t1:'🇵🇦 Panamá',t2:'🇭🇷 Croacia',sc:'vs',state:'future',pw:20,pd:28,pl:52,venue:'MetLife Stad. (Nueva Jersey)'},
+      {d:'Jun 27',t1:'🇵🇦 Panamá',t2:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',sc:'vs',state:'future',pw:12,pd:18,pl:70,venue:'AT&T Stad. (Dallas)'},
+      {d:'Jun 27',t1:'🇭🇷 Croacia',t2:'🇬🇭 Ghana',sc:'vs',state:'future',pw:55,pd:28,pl:17,venue:'Gillette Stad. (Boston)'},
+    ],
+    projStandings:[
+      {pos:1,id:'eng',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name:'Inglaterra',pts:'9',csProb:92},
+      {pos:2,id:'cro',flag:'🇭🇷',name:'Croacia',pts:'4-6',csProb:58},
+      {pos:3,id:'gha',flag:'🇬🇭',name:'Ghana',pts:'3-4',csProb:38},
+      {pos:4,id:'pan',flag:'🇵🇦',name:'Panamá',pts:'0-3',csProb:18},
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════
+// POISSON MODEL + MONTE CARLO ENGINE
+// Ref: Maher (1982), Dixon & Coles (1997), Hvattum & Arntzen (2010)
+// ═══════════════════════════════════════════════════
+
+// Attack / Defense parameters for all 48 teams
+// CONMEBOL: blend 60% actual recent data + 40% Elo-derived estimate
+// Others: Elo formula — att=(elo-1500)/300, def=1.8-(elo-1500)/500
+const TP = {
+  arg:{att:1.89,def:0.53}, bra:{att:1.44,def:0.78}, col:{att:2.14,def:0.93},
+  uru:{att:1.29,def:0.67}, ecu:{att:0.94,def:0.88}, par:{att:1.11,def:1.30},
+  esp:{att:2.05,def:0.57}, fra:{att:1.87,def:0.68}, eng:{att:1.80,def:0.72},
+  por:{att:1.83,def:0.70}, ger:{att:1.67,def:0.80}, ned:{att:1.73,def:0.76},
+  bel:{att:1.60,def:0.84}, nor:{att:1.13,def:1.12}, sen:{att:1.23,def:1.06},
+  aut:{att:1.25,def:1.05}, swe:{att:1.27,def:1.04}, sui:{att:1.37,def:0.98},
+  can:{att:1.25,def:1.05}, mex:{att:1.33,def:1.00}, usa:{att:1.32,def:1.01},
+  mar:{att:1.21,def:1.08}, jpn:{att:1.33,def:1.00}, kor:{att:1.13,def:1.12},
+  cro:{att:1.27,def:1.04}, alg:{att:1.03,def:1.18}, iri:{att:1.07,def:1.16},
+  cze:{att:1.07,def:1.16}, aus:{att:1.13,def:1.12}, tur:{att:0.99,def:1.20},
+  egy:{att:0.93,def:1.24}, tun:{att:0.93,def:1.24}, gha:{att:0.77,def:1.34},
+  civ:{att:0.97,def:1.22}, uzb:{att:0.77,def:1.34}, ksa:{att:0.73,def:1.36},
+  irq:{att:0.67,def:1.40}, bih:{att:0.73,def:1.36}, qat:{att:0.63,def:1.42},
+  jor:{att:0.50,def:1.66}, rsa:{att:0.50,def:1.52}, sco:{att:0.80,def:1.32},
+  hai:{att:0.50,def:1.82}, cod:{att:0.53,def:1.48}, pan:{att:0.53,def:1.48},
+  cpv:{att:0.50,def:1.56}, nzl:{att:0.50,def:1.56}, cur:{att:0.50,def:1.72},
+};
+
+// Name → ID map for all teams (handles abbreviations in match strings)
+const NAME_TO_ID = {
+  'Argentina':'arg','Brasil':'bra','Colombia':'col','Uruguay':'uru',
+  'Ecuador':'ecu','Paraguay':'par','España':'esp','Francia':'fra',
+  'Inglaterra':'eng','Portugal':'por','Alemania':'ger','Países Bajos':'ned',
+  'Bélgica':'bel','Noruega':'nor','Senegal':'sen','Austria':'aut',
+  'Suecia':'swe','Suiza':'sui','Canadá':'can','México':'mex','USA':'usa',
+  'Marruecos':'mar','Japón':'jpn','Corea del Sur':'kor','Croacia':'cro',
+  'Argelia':'alg','Irán':'iri','Chequia':'cze','Australia':'aus',
+  'Turquía':'tur','Egipto':'egy','Túnez':'tun','Ghana':'gha',
+  'C. Marfil':'civ','Uzbekistán':'uzb','Arabia Saudita':'ksa','A. Saudita':'ksa',
+  'Irak':'irq','Bosnia':'bih','Qatar':'qat','Jordania':'jor',
+  'Sudáfrica':'rsa','S.África':'rsa','Escocia':'sco','Haití':'hai',
+  'Congo DR':'cod','Panamá':'pan','Cabo Verde':'cpv','Nueva Zelanda':'nzl',
+  'Curazao':'cur','EE.UU.':'usa',
+};
+
+function teamIdFromLabel(label) {
+  // label = "🇦🇷 Argentina" → strip emoji+space
+  const name = label.replace(/^\S+\s+/, '').trim();
+  return NAME_TO_ID[name] || null;
+}
+
+// Poisson PMF: P(X=k) for Poisson(λ)
+function pPMF(k, lam) {
+  if (lam <= 0) return k === 0 ? 1 : 0;
+  let lp = -lam + k * Math.log(lam);
+  for (let i = 2; i <= k; i++) lp -= Math.log(i);
+  return Math.exp(lp);
+}
+
+// Sample from Poisson(λ) — Knuth algorithm (fast for λ ≤ 30)
+function pSample(lam) {
+  if (lam <= 0) return 0;
+  const L = Math.exp(-lam);
+  let k = 0, p = 1;
+  do { k++; p *= Math.random(); } while (p > L);
+  return k - 1;
+}
+
+// Compute lambdas for a match between two team IDs
+const BASELINE = 1.2; // avg international goals/team/match
+function getLambdas(idA, idB) {
+  const pA = TP[idA] || {att:1.0,def:1.2};
+  const pB = TP[idB] || {att:1.0,def:1.2};
+  return {
+    lA: Math.max(0.15, pA.att * pB.def / BASELINE),
+    lB: Math.max(0.15, pB.att * pA.def / BASELINE),
+  };
+}
+
+// W/D/L probabilities from Poisson (up to maxG goals each side)
+function poissonProbs(idA, idB, maxG=9) {
+  const {lA, lB} = getLambdas(idA, idB);
+  let w=0, d=0, l=0;
+  for (let i=0; i<=maxG; i++) {
+    const pi = pPMF(i, lA);
+    for (let j=0; j<=maxG; j++) {
+      const p = pi * pPMF(j, lB);
+      if (i>j) w+=p; else if (i===j) d+=p; else l+=p;
+    }
+  }
+  const s = w+d+l;
+  return {w:w/s, d:d/s, l:l/s, lA, lB};
+}
+
+// Score probability matrix (rows=goalsA, cols=goalsB)
+function scoreMatrix(idA, idB, maxG=4) {
+  const {lA, lB} = getLambdas(idA, idB);
+  const m = [];
+  for (let i=0; i<=maxG; i++) {
+    m[i] = [];
+    for (let j=0; j<=maxG; j++) m[i][j] = pPMF(i,lA)*pPMF(j,lB);
+  }
+  return {m, lA, lB};
+}
+
+// Monte Carlo group simulation — returns position probabilities per team
+function simulateGroupMC(group, nSims=25000) {
+  const tids = group.teams.map(t=>t.id);
+  const cnt = {};
+  tids.forEach(id => cnt[id]={p:[0,0,0,0],sumPts:0,sumGF:0,sumGA:0});
+
+  // Base state from already-played matches
+  const base = {};
+  group.teams.forEach(t => base[t.id]={pts:t.pts||0,gf:t.gf||0,gc:t.gc||0});
+
+  // Future matches with resolved IDs
+  const future = group.matches
+    .filter(m=>m.state!=='played')
+    .map(m=>({idA:teamIdFromLabel(m.t1),idB:teamIdFromLabel(m.t2)}))
+    .filter(m=>m.idA&&m.idB);
+
+  for (let s=0; s<nSims; s++) {
+    // Clone base state
+    const st = {};
+    tids.forEach(id => st[id]={...base[id]});
+
+    for (const {idA,idB} of future) {
+      const {lA,lB} = getLambdas(idA,idB);
+      const gA = pSample(lA), gB = pSample(lB);
+      st[idA].gf+=gA; st[idA].gc+=gB;
+      st[idB].gf+=gB; st[idB].gc+=gA;
+      if (gA>gB)       st[idA].pts+=3;
+      else if (gA===gB){st[idA].pts+=1; st[idB].pts+=1;}
+      else              st[idB].pts+=3;
+    }
+
+    // Rank: pts → GD → GF
+    const ranked = tids.slice().sort((a,b)=>{
+      const sa=st[a],sb=st[b];
+      if (sb.pts!==sa.pts) return sb.pts-sa.pts;
+      const gda=sa.gf-sa.gc, gdb=sb.gf-sb.gc;
+      if (gdb!==gda) return gdb-gda;
+      return sb.gf-sa.gf;
+    });
+    ranked.forEach((id,i)=>{
+      cnt[id].p[i]++;
+      cnt[id].sumPts+=st[id].pts;
+      cnt[id].sumGF+=st[id].gf;
+      cnt[id].sumGA+=st[id].gc;
+    });
+  }
+
+  const res = {};
+  tids.forEach(id=>{
+    const c=cnt[id];
+    res[id]={
+      pos: c.p.map(x=>(x/nSims*100).toFixed(1)),
+      avgPts: (c.sumPts/nSims).toFixed(1),
+      avgGF:  (c.sumGF/nSims).toFixed(2),
+      avgGA:  (c.sumGA/nSims).toFixed(2),
+      classP: ((c.p[0]+c.p[1])/nSims*100).toFixed(1),
+    };
+  });
+  return res;
+}
+
+// Render a small horizontal probability bar
+function pBar(pct, color, width=55) {
+  const w = Math.max(0,Math.min(100,parseFloat(pct)));
+  return `<div style="display:flex;align-items:center;gap:5px">
+    <div style="width:${width}px;background:var(--border);border-radius:3px;height:6px;overflow:hidden">
+      <div style="width:${w}%;background:${color};height:100%;border-radius:3px;transition:width .6s"></div>
+    </div>
+    <span style="font-size:.72rem;font-weight:600;min-width:34px">${pct}%</span>
+  </div>`;
+}
+
+// Render score matrix card HTML
+function renderScoreMatrixCard(idA, idB, nameA, nameB, flagA, flagB, date, groupId) {
+  const {m, lA, lB} = scoreMatrix(idA, idB);
+  // Find mode
+  let maxP=0, mA=0, mB=0;
+  for(let i=0;i<=4;i++) for(let j=0;j<=4;j++) if(m[i][j]>maxP){maxP=m[i][j];mA=i;mB=j;}
+  // Poisson-derived W/D/L
+  const {w,d,l} = poissonProbs(idA, idB);
+  const wP=(w*100).toFixed(0), dP=(d*100).toFixed(0), lP=(l*100).toFixed(0);
+
+  let tableHtml = `<table style="border-collapse:collapse;font-size:.62rem;width:100%">
+    <tr>
+      <th style="padding:3px 5px;color:var(--muted);text-align:left">${flagA}↓ / ${flagB}→</th>
+      ${[0,1,2,3,4].map(j=>`<th style="padding:3px 5px;color:var(--muted);text-align:center">${j}</th>`).join('')}
+    </tr>`;
+  for(let i=0;i<=4;i++){
+    tableHtml+=`<tr><th style="padding:3px 5px;color:var(--muted)">${i}</th>`;
+    for(let j=0;j<=4;j++){
+      const p=m[i][j];
+      const pct=(p*100).toFixed(1);
+      const isMode=i===mA&&j===mB;
+      const shade = i>j?`rgba(16,185,129,${Math.min(.25,p*3)})`
+                  : i===j?`rgba(245,158,11,${Math.min(.25,p*3)})`
+                  : `rgba(239,68,68,${Math.min(.25,p*3)})`;
+      const border = isMode?'2px solid var(--acc)':'1px solid var(--border)';
+      tableHtml+=`<td style="padding:3px 5px;text-align:center;background:${shade};border:${border};
+        font-weight:${p>.04?700:400};color:${p>.04?'var(--text)':'var(--muted2)'}">${pct}%</td>`;
+    }
+    tableHtml+='</tr>';
+  }
+  tableHtml+='</table>';
+
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:.68rem;color:var(--muted)">📅 ${date} · Grupo ${groupId}</span>
+      <span style="font-size:.65rem;color:var(--acc)">λ${flagA}=${lA.toFixed(2)} · λ${flagB}=${lB.toFixed(2)}</span>
+    </div>
+    <div style="display:flex;justify-content:space-around;align-items:center;margin-bottom:12px">
+      <div style="text-align:center">
+        <div style="font-size:1.5rem">${flagA}</div>
+        <div style="font-size:.78rem;font-weight:700">${nameA}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:.7rem;color:var(--green);font-weight:800">${wP}%</div>
+        <div style="font-size:.62rem;color:var(--muted)">Victoria</div>
+        <div style="font-size:.6rem;color:var(--gold);font-weight:700;margin-top:4px">⭐ ${mA}-${mB}</div>
+        <div style="font-size:.55rem;color:var(--muted)">marcador probable</div>
+        <div style="font-size:.7rem;color:var(--yellow);font-weight:800;margin-top:4px">${dP}%</div>
+        <div style="font-size:.62rem;color:var(--muted)">Empate</div>
+        <div style="font-size:.7rem;color:var(--red);font-weight:800;margin-top:4px">${lP}%</div>
+        <div style="font-size:.62rem;color:var(--muted)">Derrota</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:1.5rem">${flagB}</div>
+        <div style="font-size:.78rem;font-weight:700">${nameB}</div>
+      </div>
+    </div>
+    <div style="font-size:.62rem;color:var(--muted);margin-bottom:6px">
+      Probabilidad por marcador exacto (filas=${nameA}, columnas=${nameB}) — celdas verdes: gana ${nameA}
+    </div>
+    ${tableHtml}
+  </div>`;
+}
+
+// ── MC group filter ──
+let mcGroupFilter = 'ALL';
+function setMcFilter(id, btn) {
+  mcGroupFilter = id;
+  document.querySelectorAll('#mcGroupFilter .ts-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMCGroups();
+}
+
+// ── Main MC render ──
+let mcSimCache = null;
+function renderMonteCarlo() {
+  if (!mcSimCache) {
+    mcSimCache = {};
+    GROUPS.forEach(g => { mcSimCache[g.id] = simulateGroupMC(g, 25000); });
+  }
+  renderMCGroupFilter();
+  renderMCGroups();
+  renderMCScoreMatrices();
+}
+
+function renderMCGroupFilter() {
+  const el = document.getElementById('mcGroupFilter');
+  const opts = [{id:'ALL',label:'Todos los grupos'},{id:'CONMEBOL',label:'🌎 Solo CONMEBOL'},...GROUPS.map(g=>({id:g.id,label:`Grupo ${g.id}`}))];
+  el.innerHTML = opts.map(o=>`<button class="ts-btn ${mcGroupFilter===o.id?'active':''}" onclick="setMcFilter('${o.id}',this)">${o.label}</button>`).join('');
+}
+
+function renderMCGroups() {
+  const filtered = (mcGroupFilter==='ALL' ? GROUPS
+    : mcGroupFilter==='CONMEBOL' ? GROUPS.filter(g=>g.conmebol.length>0)
+    : GROUPS.filter(g=>g.id===mcGroupFilter))
+    .slice().sort((a,b)=>a.id.localeCompare(b.id));
+
+  document.getElementById('mcContainer').innerHTML = filtered.map(g => {
+    const sim = mcSimCache[g.id];
+    const sorted = [...g.teams].sort((a,b)=>parseFloat(sim[b.id]?.classP||0)-parseFloat(sim[a.id]?.classP||0));
+
+    const rows = sorted.map(t => {
+      const s = sim[t.id]; if(!s) return '';
+      const isCMB = g.conmebol.includes(t.id);
+      const cp = parseFloat(s.classP);
+      const cpColor = cp>65?'var(--green)':cp>35?'var(--yellow)':'var(--red)';
+      return `<tr>
+        <td style="display:flex;align-items:center;gap:6px;padding:8px 10px;${isCMB?'font-weight:700':''}">
+          <span style="color:${isCMB?'var(--acc)':'var(--text)'}">${t.flag} ${t.name}</span>
+          ${isCMB?'<span style="font-size:.6rem;background:rgba(0,212,255,.15);color:var(--acc);border-radius:4px;padding:1px 5px">CONMEBOL</span>':''}
+        </td>
+        <td style="text-align:center;padding:8px 6px;font-weight:600">${s.avgPts}</td>
+        <td style="padding:6px">${pBar(s.pos[0],'var(--gold)')}</td>
+        <td style="padding:6px">${pBar(s.pos[1],'#94a3b8')}</td>
+        <td style="padding:6px">${pBar(s.pos[2],'var(--muted2)')}</td>
+        <td style="padding:6px">${pBar(s.pos[3],'var(--red)',40)}</td>
+        <td style="text-align:center;padding:8px 10px;font-size:.88rem;font-weight:900;color:${cpColor}">${s.classP}%</td>
+      </tr>`;
+    }).join('');
+
+    const hasCMB = g.conmebol.length > 0;
+    return `<div class="card" style="margin-bottom:14px;${hasCMB?'border-color:rgba(0,212,255,.25)':''}">
+      <h3>Grupo ${g.id}
+        ${hasCMB?`<em>${g.conmebol.map(id=>TEAMS[id]?.flag+' '+TEAMS[id]?.name).join(', ')}</em>`:''}
+        <span style="margin-left:auto;font-size:.62rem;color:var(--muted);font-weight:400">n=25.000 simulaciones</span>
+      </h3>
+      <div style="overflow-x:auto">
+        <table class="standings-table" style="margin-bottom:0">
+          <tr>
+            <th style="text-align:left;min-width:140px">Equipo</th>
+            <th>Pts med.</th>
+            <th>1° 🥇</th><th>2° 🥈</th><th>3° 🥉</th><th>4° ❌</th>
+            <th>Clasificar</th>
+          </tr>
+          ${rows}
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Score matrices for all pending CONMEBOL matches
+function renderMCScoreMatrices() {
+  const conmebolIds = ['arg','bra','col','uru','ecu','par'];
+  const cards = [];
+  GROUPS.forEach(g => {
+    if (!g.conmebol.length) return;
+    g.matches.forEach(m => {
+      if (m.state==='played') return;
+      const idA = teamIdFromLabel(m.t1);
+      const idB = teamIdFromLabel(m.t2);
+      if (!idA||!idB) return;
+      // Only include if at least one team is CONMEBOL
+      if (!conmebolIds.includes(idA) && !conmebolIds.includes(idB)) return;
+      const tA = g.teams.find(t=>t.id===idA);
+      const tB = g.teams.find(t=>t.id===idB);
+      if (!tA||!tB) return;
+      cards.push(renderScoreMatrixCard(idA,idB,tA.name,tB.name,tA.flag,tB.flag,m.d,g.id));
+    });
+  });
+  document.getElementById('mcScoreMatrices').innerHTML = cards.join('');
+}
+
+// ═══════════════════════════════════════════════════
+// VENTANA DE PREDICCIÓN (próximos 14 días)
+// ═══════════════════════════════════════════════════
+const TODAY_DAY = 16; // 16 jun 2026
+const WINDOW_END_DAY = 29; // hoy + 14 días
+
+// ═══════════════════════════════════════════════════
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='predicciones') renderPredictions();
+  if(id==='montecarlo') setTimeout(renderMonteCarlo, 20);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER GROUPS
+// ═══════════════════════════════════════════════════
+let activeGroupFilter = 'ALL';
+function renderGroupFilter() {
+  const el = document.getElementById('groupFilter');
+  const opts = [
+    {id:'ALL',label:'Todos los grupos'},
+    {id:'CONMEBOL',label:'🌎 CONMEBOL'},
+    ...GROUPS.map(g=>({id:g.id,label:`Grupo ${g.id}`}))
+  ];
+  el.innerHTML = opts.map(o=>`
+    <button class="ts-btn ${activeGroupFilter===o.id?'active':''}"
+      onclick="setGroupFilter('${o.id}',this)">${o.label}</button>
+  `).join('');
+}
+function setGroupFilter(id, btn) {
+  activeGroupFilter = id;
+  document.querySelectorAll('#groupFilter .ts-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGroups();
+}
+
+function renderGroups() {
+  const c = document.getElementById('groupsContainer');
+  const filtered = (activeGroupFilter==='ALL' ? GROUPS
+    : activeGroupFilter==='CONMEBOL' ? GROUPS.filter(g=>g.conmebol.length>0)
+    : GROUPS.filter(g=>g.id===activeGroupFilter))
+    .slice().sort((a,b)=>a.id.localeCompare(b.id));
+  c.innerHTML = filtered.map(g => {
+    // Sort by pts desc, gd
+    const sorted = [...g.teams].sort((a,b)=>{
+      const ap=a.pts??0, bp=b.pts??0;
+      if(bp!==ap) return bp-ap;
+      return (b.gf-b.gc)-(a.gf-a.gc);
+    });
+
+    const standingsHtml = `
+      <table class="standings-table">
+        <tr><th>Equipo</th><th>PJ</th><th>G</th><th>E</th><th>P</th><th>GF</th><th>GC</th><th>PTS</th></tr>
+        ${sorted.map((t,i)=>{
+          const posClass=['pos1','pos2','pos3','pos4'][i];
+          const qualify = i<2;
+          return `<tr class="${qualify?'qualify':''}">
+            <td>
+              <div class="qual-bar" style="background:${qualify?'var(--green)':i===2?'var(--yellow)':'var(--red)'}"></div>
+              <span class="pos-badge ${posClass}">${i+1}</span>
+              ${t.flag} ${t.name}
+            </td>
+            <td>${t.pj}</td>
+            <td>${t.pg}</td>
+            <td>${t.pe}</td>
+            <td>${t.pp}</td>
+            <td>${t.gf}</td>
+            <td>${t.gc}</td>
+            <td class="pts-cell">${t.pts??'—'}</td>
+          </tr>`;
+        }).join('')}
+      </table>`;
+
+    const matchesHtml = g.matches.map(m=>{
+      const stateClass = m.state==='played'?'played':m.state==='today'?'today':'';
+      const scoreEl = m.state==='played'
+        ? `<div class="match-score">${m.sc}</div>`
+        : m.state==='today'
+        ? `<div class="match-score live">🔴 HOY</div>`
+        : `<div>
+            <div class="match-score pending">vs</div>
+            <div class="prob-micro">
+              <div class="pb-w" style="width:${m.pw}%"></div>
+              <div class="pb-d" style="width:${m.pd}%"></div>
+              <div class="pb-l" style="width:${m.pl}%"></div>
+            </div>
+          </div>`;
+      const predEl = m.state==='future'
+        ? `<span class="pred-badge ${m.pw>50?'win':m.pd>=m.pw&&m.pd>=m.pl?'draw':'loss'}">${m.pw>50?m.t1.split(' ').slice(1).join(' '):m.pd>=m.pw&&m.pd>=m.pl?'Empate':m.t2.split(' ').slice(1).join(' ')} 🔮</span>`
+        : m.state==='today' ? `<span class="pred-badge win">En juego</span>` : `<span class="pred-badge draw">Confirmado ✅</span>`;
+      return `<div class="match-item ${stateClass}">
+        <div class="match-date">${m.d}<br><span style="font-size:.6rem;color:var(--muted2)">${m.venue||'—'}</span></div>
+        <div class="match-team">${m.t1}</div>
+        ${scoreEl}
+        <div class="match-team right">${m.t2}</div>
+        <div style="text-align:center">${predEl}</div>
+      </div>`;
+    }).join('');
+
+    const projHtml = `
+      <div style="padding:10px 16px;border-top:1px solid var(--border);background:rgba(124,58,237,.04)">
+        <div style="font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">🔮 Clasificación proyectada</div>
+        ${g.projStandings.map((p,i)=>{
+          const posClass=['pos1','pos2','pos3','pos4'][i];
+          const isConmebol = g.conmebol.includes(p.id);
+          return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid var(--border);font-size:.75rem;${i===3?'border-bottom:none':''}">
+            <span class="pos-badge ${posClass}">${p.pos}</span>
+            <span style="flex:1;font-weight:${isConmebol?700:400};color:${isConmebol?'var(--acc)':'var(--text)'}">${p.flag} ${p.name}${isConmebol?' ←':''}  </span>
+            <span style="color:var(--muted);font-size:.68rem">Pts: ${p.pts}</span>
+            <span style="color:${p.csProb>60?'var(--green)':p.csProb>35?'var(--yellow)':'var(--red)'};font-weight:700;font-size:.72rem">${p.csProb}%</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+
+    const conmebolTeam = g.conmebol.map(id=>TEAMS[id]?.name).join(', ');
+    const conmebolBadge = g.conmebol.length>0
+      ? `<span style="background:rgba(0,212,255,.15);border:1px solid rgba(0,212,255,.4);color:var(--acc);border-radius:12px;padding:2px 8px;font-size:.62rem;font-weight:700">🌎 ${conmebolTeam}</span>`
+      : '';
+
+    return `<div class="group-card">
+      <div class="group-header">
+        <h2>Grupo ${g.id}</h2>
+        <div style="display:flex;align-items:center;gap:8px">${conmebolBadge}</div>
+      </div>
+      ${standingsHtml}
+      <div class="match-list">${matchesHtml}</div>
+      ${projHtml}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// PREDICTIONS TAB
+// ═══════════════════════════════════════════════════
+const ALL_PRED_MATCHES = [
+  // GROUP C - BRASIL
+  {g:'C',d:'Jun 19',t1:{flag:'🇧🇷',name:'Brasil',sub:'FIFA #6 · Elo 1991'},t2:{flag:'🇭🇹',name:'Haití',sub:'FIFA #83'},pw:82,pd:13,pl:5,
+    insight:'<b>Brasil</b> necesita ganar tras el empate ante Marruecos. Haití tiene el nivel más bajo del grupo. Brasil debería dominar pero su irregularidad ofensiva (1.31 gf/p) puede complicarlo. <b>Favorito claro: Brasil.</b>',best:'Brasil'},
+  {g:'C',d:'Jun 19',t1:{flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name:'Escocia',sub:'FIFA #39'},t2:{flag:'🇲🇦',name:'Marruecos',sub:'FIFA #14 · Elo 1862'},pw:35,pd:32,pl:33,
+    insight:'Partido clave del grupo. <b>Escocia</b> sorprendió ganando a Haití y lidera. Marruecos viene del empate ante Brasil — un equipo consolidado. Partido muy parejo, empate posible.',best:'Empate'},
+  {g:'C',d:'Jun 24',t1:{flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',name:'Escocia',sub:'FIFA #39'},t2:{flag:'🇧🇷',name:'Brasil',sub:'FIFA #6 · Elo 1991'},pw:22,pd:28,pl:50,
+    insight:'<b>Brasil</b> enfrenta un test serio. Si necesita el 1° puesto peleará con todo. La delantera de Brasil (Vinícius, Rodrygo) debería ser determinante. <b>Brasil ligero favorito.</b>',best:'Brasil'},
+  // GROUP D - PARAGUAY
+  {g:'D',d:'Jun 19',t1:{flag:'🇹🇷',name:'Turquía',sub:'FIFA #35'},t2:{flag:'🇵🇾',name:'Paraguay',sub:'FIFA #41 · 0pts'},pw:42,pd:28,pl:30,
+    insight:'<b>Paraguay casi eliminado</b> con 0 pts. Necesita ganar sí o sí. Turquía también viene de perder 0-2 ante Australia. Partido de vida o muerte para ambos. Turquía con ligera ventaja de calidad.',best:'Turquía'},
+  {g:'D',d:'Jun 25',t1:{flag:'🇵🇾',name:'Paraguay',sub:'FIFA #41 · 0pts'},t2:{flag:'🇦🇺',name:'Australia',sub:'FIFA #22 · 3pts'},pw:35,pd:28,pl:37,
+    insight:'Con Paraguay probablemente eliminado, Australia solo necesita un punto para avanzar. Paraguay jugará con todo en su último partido. Resultado muy incierto — podría ser el más peleado.',best:'Australia (leve)'},
+  // GROUP E - ECUADOR
+  {g:'E',d:'Jun 20',t1:{flag:'🇪🇨',name:'Ecuador',sub:'FIFA #23 · 0pts'},t2:{flag:'🇨🇼',name:'Curazao',sub:'FIFA #94'},pw:78,pd:15,pl:7,
+    insight:'Tras la caída 0-1 ante C. Marfil, <b>Ecuador no puede fallar aquí</b>. Curazao ya recibió 7 goles de Alemania y es el rival más débil del grupo. Partido de obligación para mantener chances de avanzar.',best:'Ecuador'},
+  {g:'E',d:'Jun 25',t1:{flag:'🇪🇨',name:'Ecuador',sub:'FIFA #23'},t2:{flag:'🇩🇪',name:'Alemania',sub:'FIFA #3 · Elo 2000'},pw:15,pd:22,pl:63,
+    insight:'<b>Partido de 6 puntos</b> si Ecuador necesita el pase. Alemania es amplio favorito. Ecuador sorprendió a Argentina (1-0) en Eliminatorias — tiene capacidad para el contraataque. Pero Alemania es otro nivel.',best:'Alemania'},
+  // GROUP H - URUGUAY
+  {g:'H',d:'Jun 21',t1:{flag:'🇺🇾',name:'Uruguay',sub:'FIFA #16 · 1pt'},t2:{flag:'🇨🇻',name:'Cabo Verde',sub:'FIFA #73'},pw:75,pd:18,pl:7,
+    insight:'<b>Uruguay muy favorito</b>. Cabo Verde es la revelación africana pero no tiene el nivel para superar a la defensiva uruguaya (mejor CONMEBOL). Uruguay deberá ganar sí o sí.',best:'Uruguay'},
+  {g:'H',d:'Jun 26',t1:{flag:'🇺🇾',name:'Uruguay',sub:'FIFA #16'},t2:{flag:'🇪🇸',name:'España',sub:'FIFA #2 · Elo 2114'},pw:20,pd:22,pl:58,
+    insight:'El <b>gran duelo del grupo</b>. Si España ya clasificó podría rotaer. Si Uruguay ya tiene el 2°, podría hacer lo mismo. Si es partido decisivo: España favorita pero Uruguay defensivamente es muy sólido. Posible empate táctico.',best:'España'},
+  // GROUP J - ARGENTINA
+  {g:'J',d:'Jun 16',t1:{flag:'🇦🇷',name:'Argentina',sub:'FIFA #1 · Elo 2115'},t2:{flag:'🇩🇿',name:'Argelia',sub:'FIFA #33'},pw:82,pd:12,pl:6,
+    insight:'<b>Argentina abre su campaña</b> ante Argelia. Los argelinos son difíciles (buenos en defensa) pero Argentina en una fase inicial debería dominar. Hay presión por marcar temprano. xG 1.74 y conv 18% hablan bien.',best:'Argentina'},
+  {g:'J',d:'Jun 22',t1:{flag:'🇦🇷',name:'Argentina',sub:'FIFA #1'},t2:{flag:'🇦🇹',name:'Austria',sub:'FIFA #25 · Elo 1875'},pw:72,pd:18,pl:10,
+    insight:'<b>Austria es el rival más serio del grupo</b>. La liga austriaca (RB Salzburgo) y sus jugadores en Europa hacen de Austria un equipo ordenado. Argentina debería ganar pero no tan holgadamente.',best:'Argentina'},
+  {g:'J',d:'Jun 27',t1:{flag:'🇯🇴',name:'Jordania',sub:'FIFA #87'},t2:{flag:'🇦🇷',name:'Argentina',sub:'FIFA #1'},pw:5,pd:12,pl:83,
+    insight:'Argentina probablemente ya clasificada. Messi y compañía ante el rival más débil. Alta probabilidad de goleada argentina. Cuidado con lesiones en partido "de trámite".',best:'Argentina'},
+  // GROUP K - COLOMBIA
+  {g:'K',d:'Jun 17',t1:{flag:'🇺🇿',name:'Uzbekistán',sub:'FIFA #61'},t2:{flag:'🇨🇴',name:'Colombia',sub:'FIFA #13 · Elo 1982'},pw:22,pd:25,pl:53,
+    insight:'<b>Colombia debería ganar</b> su debut. Uzbekistán está creciendo pero Colombia tiene más experiencia internacional y calidad (Luis Díaz, James R., Falcao ya retirado pero jóvenes fuertes). Colombia 2.5 goles/p últimos 10.',best:'Colombia'},
+  {g:'K',d:'Jun 23',t1:{flag:'🇨🇴',name:'Colombia',sub:'FIFA #13'},t2:{flag:'🇨🇩',name:'Congo DR',sub:'FIFA #52'},pw:62,pd:22,pl:16,
+    insight:'Colombia favorita clara ante Congo DR. Los congoleños son más físicos pero Colombia tiene la calidad para manejar el partido. Luis Díaz puede ser determinante en bandas.',best:'Colombia'},
+  {g:'K',d:'Jun 27',t1:{flag:'🇨🇴',name:'Colombia',sub:'FIFA #13'},t2:{flag:'🇵🇹',name:'Portugal',sub:'FIFA #5 · Elo 2050'},pw:22,pd:25,pl:53,
+    insight:'<b>El clásico del grupo</b>. Si Colombia ya va en 2°, podría ser un partido de alto voltaje con Portugal también buscando mantener el 1°. Muy díficil para Colombia pero no imposible — ganó a Argentina en Eliminatorias.',best:'Portugal'},
+];
+
+// Identifica partidos de ALL_PRED_MATCHES para no duplicarlos al autogenerar el resto.
+function predMatchKey(g, d, nameA, nameB) {
+  return `${g}|${d}|${[nameA, nameB].sort().join('~')}`;
+}
+
+// Genera entradas de predicción (con el mismo modelo Poisson del resto del dashboard)
+// para todos los partidos restantes de los próximos 14 días que NO están ya
+// curados a mano en ALL_PRED_MATCHES (es decir, los que no son de equipos CONMEBOL).
+function buildAutoPredMatches() {
+  const covered = new Set(ALL_PRED_MATCHES.map(m => predMatchKey(m.g, m.d, m.t1.name, m.t2.name)));
+  const autos = [];
+  GROUPS.forEach(g => {
+    g.matches.forEach(m => {
+      if (m.state === 'played') return;
+      const dayMatch = m.d.match(/\d+/);
+      const day = dayMatch ? parseInt(dayMatch[0], 10) : TODAY_DAY;
+      if (day < TODAY_DAY || day > WINDOW_END_DAY) return;
+
+      const name1 = m.t1.replace(/^\S+\s+/, '').trim();
+      const name2 = m.t2.replace(/^\S+\s+/, '').trim();
+      if (covered.has(predMatchKey(g.id, m.d, name1, name2))) return;
+
+      const id1 = teamIdFromLabel(m.t1), id2 = teamIdFromLabel(m.t2);
+      const t1 = g.teams.find(t => t.id === id1);
+      const t2 = g.teams.find(t => t.id === id2);
+      if (!t1 || !t2) return;
+
+      const { w, d: dP, l } = poissonProbs(id1, id2);
+      const wP = Math.round(w * 100), drP = Math.round(dP * 100), lP = Math.round(l * 100);
+      const flag1 = m.t1.match(/^\S+/)[0], flag2 = m.t2.match(/^\S+/)[0];
+      const sub1 = `FIFA #${t1.fifa}${t1.pts != null ? ` · ${t1.pts}pts` : ''}`;
+      const sub2 = `FIFA #${t2.fifa}${t2.pts != null ? ` · ${t2.pts}pts` : ''}`;
+
+      const zero1 = t1.pj > 0 && (t1.pts || 0) === 0;
+      const zero2 = t2.pj > 0 && (t2.pts || 0) === 0;
+      const urgency = zero1 ? ` ${name1} llega obligado a ganar tras no sumar en su partido anterior.`
+        : zero2 ? ` ${name2} llega obligado a ganar tras no sumar en su partido anterior.` : '';
+
+      let best, insight;
+      const gap = wP - lP;
+      if (Math.abs(gap) < 12 && drP >= Math.max(wP, lP) - 5) {
+        best = 'Empate';
+        insight = `Partido parejo según el modelo: Elo ${t1.elo} vs ${t2.elo}, FIFA #${t1.fifa} vs #${t2.fifa}. El empate es el resultado individual más probable (${drP}%).${urgency}`;
+      } else if (gap >= 0) {
+        best = name1;
+        insight = `${name1} es favorito por modelo (Elo ${t1.elo} vs ${t2.elo}, FIFA #${t1.fifa} vs #${t2.fifa}) con ${wP}% de probabilidad de victoria.${urgency}`;
+      } else {
+        best = name2;
+        insight = `${name2} es favorito por modelo (Elo ${t2.elo} vs ${t1.elo}, FIFA #${t2.fifa} vs #${t1.fifa}) con ${lP}% de probabilidad de victoria.${urgency}`;
+      }
+
+      autos.push({
+        g: g.id, d: m.d,
+        t1: { flag: flag1, name: name1, sub: sub1 },
+        t2: { flag: flag2, name: name2, sub: sub2 },
+        pw: wP, pd: drP, pl: lP,
+        insight, best, auto: true,
+      });
+    });
+  });
+  return autos;
+}
+
+function getAllPredMatches() {
+  return [...ALL_PRED_MATCHES, ...buildAutoPredMatches()].sort((a, b) => {
+    const da = parseInt(a.d.match(/\d+/)[0], 10), db = parseInt(b.d.match(/\d+/)[0], 10);
+    return da - db || a.g.localeCompare(b.g);
+  });
+}
+
+let activePredGroup = 'ALL';
+function renderPredictions() {
+  const allMatches = getAllPredMatches();
+  const conmebolShort = {arg:'ARG',bra:'BRA',col:'COL',uru:'URU',ecu:'ECU',par:'PAR'};
+  const groupIds = [...new Set(allMatches.map(m => m.g))].sort();
+  const labels = { ALL: 'Todos' };
+  groupIds.forEach(gid => {
+    const grp = GROUPS.find(g => g.id === gid);
+    const cm = grp && grp.conmebol[0];
+    labels[gid] = cm ? `Grupo ${gid} (${conmebolShort[cm]})` : `Grupo ${gid}`;
+  });
+  const groups = ['ALL', ...groupIds];
+
+  const filterEl = document.getElementById('predGroupFilter');
+  filterEl.innerHTML = groups.map(g=>`
+    <button class="ts-btn ${activePredGroup===g?'active':''}" onclick="filterPred('${g}',this)">${labels[g]}</button>
+  `).join('');
+
+  const filtered = activePredGroup==='ALL' ? allMatches : allMatches.filter(m=>m.g===activePredGroup);
+  const c = document.getElementById('predictorContainer');
+  c.innerHTML = filtered.map(m=>{
+    // Compute Poisson probabilities (replace manual estimates)
+    const id1 = NAME_TO_ID[m.t1.name];
+    const id2 = NAME_TO_ID[m.t2.name];
+    let wP, dP, lP, lambdaLine = '';
+    if (id1 && id2) {
+      const pp = poissonProbs(id1, id2);
+      wP = (pp.w*100).toFixed(0);
+      dP = (pp.d*100).toFixed(0);
+      lP = (pp.l*100).toFixed(0);
+      lambdaLine = `<div style="font-size:.62rem;color:var(--muted);text-align:center;margin-bottom:8px">
+        λ${m.t1.flag}=<b style="color:var(--green)">${pp.lA.toFixed(2)}</b> goles esperados ·
+        λ${m.t2.flag}=<b style="color:var(--red)">${pp.lB.toFixed(2)}</b> goles esperados
+        <span style="background:rgba(0,212,255,.15);color:var(--acc);border-radius:4px;padding:1px 6px;margin-left:6px;font-size:.58rem">POISSON</span>
+      </div>`;
+    } else {
+      wP = m.pw; dP = m.pd; lP = m.pl;
+    }
+    return `
+    <div class="predict-card">
+      <div class="predict-header">
+        <span class="pc-date">📅 ${m.d}</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          ${m.auto ? '<span style="font-size:.6rem;background:rgba(124,58,237,.18);color:var(--acc2);padding:2px 6px;border-radius:4px;font-weight:700">🤖 auto</span>' : ''}
+          <span class="pc-group">Grupo ${m.g}</span>
+        </span>
+      </div>
+      <div class="predict-body">
+        <div class="predict-match">
+          <div class="pm-team">
+            <div class="pm-flag">${m.t1.flag}</div>
+            <div class="pm-name">${m.t1.name}</div>
+            <div class="pm-sub">${m.t1.sub}</div>
+          </div>
+          <div class="pm-vs">VS</div>
+          <div class="pm-team">
+            <div class="pm-flag">${m.t2.flag}</div>
+            <div class="pm-name">${m.t2.name}</div>
+            <div class="pm-sub">${m.t2.sub}</div>
+          </div>
+        </div>
+        ${lambdaLine}
+        <div class="predict-probs">
+          <div class="pp-box win"><div class="pp-pct">${wP}%</div><div class="pp-lbl">${m.t1.name}</div></div>
+          <div class="pp-box draw"><div class="pp-pct">${dP}%</div><div class="pp-lbl">Empate</div></div>
+          <div class="pp-box loss"><div class="pp-pct">${lP}%</div><div class="pp-lbl">${m.t2.name}</div></div>
+        </div>
+        <div class="predict-insight">🔮 <b>Predicción: ${m.best}</b><br>${m.insight}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function filterPred(g, btn) {
+  activePredGroup = g;
+  renderPredictions();
+}
+
+const charts = {};
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
+
+function _removedRenderBracket() {
+  // Group summary
+  const summaryEl = document.getElementById('bracketGroupSummary');
+  const projData = [
+    {g:'J',conmebol:'🇦🇷 Argentina',pos:'1°',prob:97,color:'var(--green)'},
+    {g:'K',conmebol:'🇨🇴 Colombia',pos:'2°',prob:72,color:'var(--green)'},
+    {g:'H',conmebol:'🇺🇾 Uruguay',pos:'2°',prob:68,color:'var(--green)'},
+    {g:'C',conmebol:'🇧🇷 Brasil',pos:'2°',prob:65,color:'var(--yellow)'},
+    {g:'E',conmebol:'🇪🇨 Ecuador',pos:'2°/3°',prob:42,color:'var(--yellow)'},
+    {g:'D',conmebol:'🇵🇾 Paraguay',pos:'4°',prob:8,color:'var(--red)'},
+  ];
+  summaryEl.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:8px">
+    ${projData.map(p=>`
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:1.4rem">${p.conmebol.split(' ')[0]}</div>
+        <div style="flex:1">
+          <div style="font-size:.78rem;font-weight:700">${p.conmebol.split(' ').slice(1).join(' ')}</div>
+          <div style="font-size:.68rem;color:var(--muted)">Grupo ${p.g} · Proyección: ${p.pos}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:1.1rem;font-weight:900;color:${p.color}">${p.prob}%</div>
+          <div style="font-size:.6rem;color:var(--muted)">clasificar</div>
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+
+  // Ruta Argentina
+  const rutaEl = document.getElementById('rutaArg');
+  const rutaData = TEAMS.arg.worldcupPath;
+  rutaEl.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+    ${rutaData.map((s,i)=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--s2);border:1px solid var(--border);border-radius:8px">
+        <div style="font-size:.7rem;color:var(--muted);width:70px">${s.stage}</div>
+        <div style="flex:1;font-size:.8rem;font-weight:600">${s.pred}</div>
+        <div style="font-size:.85rem;font-weight:800;color:${s.prob>60?'var(--green)':s.prob>35?'var(--yellow)':'var(--muted)'}">${s.prob}%</div>
+      </div>
+    `).join('')}
+  </div>`;
+
+  // Campeón chart
+  destroyChart('chartCampeon');
+  charts['chartCampeon'] = new Chart(document.getElementById('chartCampeon'),{
+    type:'bar',
+    data:{
+      labels:['🇦🇷 Argentina','🇪🇸 España','🇫🇷 Francia','🇵🇹 Portugal','🇩🇪 Alemania','🇧🇷 Brasil','🇨🇴 Colombia','🇺🇾 Uruguay','🏴󠁧󠁢󠁳󠁣󠁴󠁿 Escocia','Otros'],
+      datasets:[{
+        label:'% Probabilidad de ser campeón',
+        data:[28,18,14,11,9,12,3,2,1,2],
+        backgroundColor:['#74b9ff88','#ff4d4d88','#4169e188','#ee4b2b88','#f0e13088','#55efc488','#fd79a888','#a29bfe88','#0052CC88','#99999988'],
+        borderColor:['#74b9ff','#ff4d4d','#4169e1','#ee4b2b','#f0e130','#55efc4','#fd79a8','#a29bfe','#0052CC','#999999'],
+        borderWidth:2,borderRadius:6
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.x}% prob. de campeón`}}},
+      scales:{
+        x:{max:35,grid:{color:'#1e2f4a'},ticks:{color:'#64748b',callback:v=>v+'%'}},
+        y:{grid:{display:false},ticks:{color:'#e2e8f0',font:{size:12}}}
+      }
+    }
+  });
+
+  // R32 chart
+  destroyChart('chartR32');
+  charts['chartR32'] = new Chart(document.getElementById('chartR32'),{
+    type:'bar',
+    data:{
+      labels:['🇦🇷','🇨🇴','🇺🇾','🇧🇷','🇪🇨','🇵🇾'],
+      datasets:[{
+        label:'% Prob. clasificar a R32',
+        data:[97,72,68,65,42,8],
+        backgroundColor:['#10b98188','#fd79a888','#a29bfe88','#55efc488','#ffeaa788','#ff767588'],
+        borderColor:['#10b981','#fd79a8','#a29bfe','#55efc4','#ffeaa7','#ff7675'],
+        borderWidth:2,borderRadius:6
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{max:100,grid:{color:'#1e2f4a'},ticks:{color:'#64748b',callback:v=>v+'%'}},
+        x:{grid:{display:false},ticks:{color:'#e2e8f0',font:{size:16}}}
+      }
+    }
+  });
+}
+
+function _removedRenderTeamSelector() {
+  document.getElementById('teamSel').innerHTML = Object.values(TEAMS).map(t=>`
+    <button class="ts-btn ${t.id===activeTeam?'active':''}" id="ts-${t.id}" onclick="selectTeam('${t.id}')">
+      ${t.flag} ${t.name}
+    </button>
+  `).join('');
+}
+
+function selectTeam(id) {
+  activeTeam = id;
+  document.querySelectorAll('.ts-btn').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('ts-'+id);
+  if(btn) btn.classList.add('active');
+  const t = TEAMS[id];
+  const g = GROUPS.find(gr=>gr.conmebol.includes(id));
+  ['tc1','tc2','tc3'].forEach(destroyChart);
+
+  const mColor = (v,good,bad)=>{
+    if(v===null||v===undefined) return 'acc';
+    return v>=good?'green':v<=bad?'red':'yellow';
+  };
+  const na = v=>v!==null&&v!==undefined?v:'—';
+  const naP = v=>v!==null&&v!==undefined?v+'%':'Sin datos';
+
+  const formHtml = t.forma.map(f=>`<div class="form-pill fp-${f}">${f}</div>`).join('');
+
+  // WC path
+  const pathHtml = `
+    <div class="wc-path">
+      <h3>⚽ Ruta proyectada en el Mundial</h3>
+      <div class="wc-stages">
+        ${t.worldcupPath.map(s=>`
+          <div class="wc-stage">
+            <div class="wc-stage-inner">
+              <div class="wc-stage-label">${s.stage}</div>
+              <div class="wc-stage-val">${s.pred||'?'}</div>
+              <div class="wc-stage-prob">${s.prob}%</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`;
+
+  // Group context
+  const groupHtml = g ? `
+    <div class="card" style="margin-bottom:16px">
+      <h3>🗂 Grupo ${g.id} — Contexto mundialista</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:.78rem">
+        <div>
+          <div style="color:var(--muted);margin-bottom:6px">Rivales en grupo:</div>
+          ${g.teams.filter(x=>x.id!==id).map(x=>`<div style="margin-bottom:4px">${x.flag} ${x.name} (FIFA #${x.fifa})</div>`).join('')}
+        </div>
+        <div>
+          <div style="color:var(--muted);margin-bottom:6px">Proyección grupo:</div>
+          <div style="color:var(--acc);font-weight:700;font-size:.9rem">${g.projStandings.find(x=>x.id===id)?.pts||'?'} pts proyectados</div>
+          <div style="color:var(--green);font-size:.82rem;margin-top:4px">Prob. clasificar: ${g.projStandings.find(x=>x.id===id)?.csProb||'?'}%</div>
+          ${t.pts!==null?`<div style="margin-top:6px;font-size:.78rem">Puntos actuales: <b style="color:var(--acc)">${t.pts}</b> (${t.played} partido/s jugado/s)</div>`:'<div style="margin-top:6px;font-size:.72rem;color:var(--muted)">Aún no jugó en el Mundial</div>'}
+        </div>
+      </div>
+    </div>
+  ` : '';
+
+  document.getElementById('teamProfileContent').innerHTML = `
+    <div class="profile-top">
+      <div class="pt-flag">${t.flag}</div>
+      <div class="pt-info">
+        <h2>${t.name}</h2>
+        <div class="pt-badges">
+          <span class="badge b-acc">FIFA #${t.fifa}</span>
+          <span class="badge">Elo ${t.elo}</span>
+          <span class="badge">Grupo ${t.group}</span>
+          ${t.fifa===1?'<span class="badge b-gold">🏆 Campeón Vigente</span>':''}
+          ${id==='par'?'<span class="badge b-red">⚠️ 0 pts · Elim. peligro</span>':''}
+          ${id==='ecu'?'<span class="badge b-red">⚠️ 0 pts · Debut perdido</span>':''}
+        </div>
+      </div>
+      <div class="pt-idx">
+        <div class="pt-idx-num">${t.idxM}</div>
+        <div class="pt-idx-lbl">Índice Mundialista / 100</div>
+      </div>
+    </div>
+
+    <div class="hot-box"><span style="font-size:1.5rem">🔥</span><p>${t.hotDato}</p></div>
+
+    ${pathHtml}
+    ${groupHtml}
+
+    <div class="sec-label" style="margin-bottom:12px">Forma reciente — últimos 5 partidos oficiales</div>
+    <div class="form-strip" style="margin-bottom:16px">${formHtml}<span class="form-lbl">← más reciente</span></div>
+
+    <div class="sec-label" style="margin-bottom:12px">Probabilidades modelo (partido promedio vs rival de nivel similar)</div>
+    <div class="prob-3">
+      <div class="p3-box p3-win"><div class="p3-pct">${t.probW}%</div><div class="p3-lbl">Victoria</div></div>
+      <div class="p3-box p3-draw"><div class="p3-pct">${t.probD}%</div><div class="p3-lbl">Empate</div></div>
+      <div class="p3-box p3-loss"><div class="p3-pct">${t.probL}%</div><div class="p3-lbl">Derrota</div></div>
+    </div>
+    <div style="font-size:.68rem;color:var(--muted);margin-bottom:16px">⚠️ Probabilidad estimada mediante modelo analítico propio. No corresponde a probabilidad oficial.</div>
+
+    <div class="metrics-row">
+      <div class="metric"><div class="ml">Victorias</div><div class="mv ${mColor(t.wins,60,40)}">${t.wins}%</div></div>
+      <div class="metric"><div class="ml">Empates</div><div class="mv yellow">${t.draws}%</div></div>
+      <div class="metric"><div class="ml">Derrotas</div><div class="mv ${mColor(100-t.losses,85,70)}">${t.losses}%</div></div>
+      <div class="metric"><div class="ml">Goles/partido</div><div class="mv ${mColor(t.gf,1.5,1.0)}">${t.gf}</div></div>
+      <div class="metric"><div class="ml">xG/partido</div><div class="mv ${mColor(t.xG,1.4,1.0)}">${na(t.xG)}</div>${!t.xG?'<div class="ms">Sin datos suf.</div>':''}</div>
+      <div class="metric"><div class="ml">Goles recib./p</div><div class="mv ${mColor(2-t.ga,1.2,.5)}">${t.ga}</div></div>
+      <div class="metric"><div class="ml">xGA/partido</div><div class="mv yellow">${na(t.xGA)}</div>${!t.xGA?'<div class="ms">Sin datos suf.</div>':''}</div>
+      <div class="metric"><div class="ml">Vallas invictas</div><div class="mv ${mColor(t.cs,55,35)}">${t.cs}%</div></div>
+      <div class="metric"><div class="ml">Posesión</div><div class="mv ${mColor(t.poss,55,45)}">${naP(t.poss)}</div>${!t.poss?'<div class="ms">Sin datos suf.</div>':''}</div>
+      <div class="metric"><div class="ml">Remates/p</div><div class="mv ${mColor(t.shots,13,10)}">${na(t.shots)}</div>${!t.shots?'<div class="ms">Sin datos suf.</div>':''}</div>
+      <div class="metric"><div class="ml">Over 2.5</div><div class="mv ${mColor(t.over25,50,30)}">${naP(t.over25)}</div></div>
+      <div class="metric"><div class="ml">BTTS</div><div class="mv ${mColor(t.btts,50,30)}">${t.btts}%</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="card">
+        <h3>📈 Índices avanzados</h3>
+        <div class="chart-wrap"><canvas id="tc1"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>🏆 V/E/D — Últimos partidos oficiales</h3>
+        <div class="chart-wrap"><canvas id="tc2"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <h3>📋 Historial de partidos analizados</h3>
+      <div style="overflow-x:auto;margin-top:8px">
+        <table class="results-tbl">
+          <tr><th>Fecha</th><th>Rival</th><th>Score</th><th>R</th><th>Competición</th></tr>
+          ${t.results.map(r=>`<tr>
+            <td style="color:var(--muted);white-space:nowrap">${r.d}</td>
+            <td>${r.r}</td>
+            <td style="font-weight:700;white-space:nowrap">${r.sc}</td>
+            <td><span class="rp rp-${r.res}">${r.res}</span></td>
+            <td style="color:var(--muted);font-size:.7rem;white-space:nowrap">${r.c}</td>
+          </tr>`).join('')}
+        </table>
+      </div>
+    </div>
+  `;
+
+  const clr = {arg:'#74b9ff',bra:'#55efc4',col:'#fd79a8',uru:'#a29bfe',ecu:'#ffeaa7',par:'#ff7675'}[id]||'#00d4ff';
+
+  charts['tc1'] = new Chart(document.getElementById('tc1'),{
+    type:'radar',
+    data:{
+      labels:['Forma','Ofensivo','Defensivo','FIFA Rnk','Elo Rnk'],
+      datasets:[{
+        label:t.name,
+        data:[t.idxF,t.idxO,t.idxD,Math.max(0,100-t.fifa*1.5),Math.round((t.elo-1700)/5)],
+        borderColor:clr,backgroundColor:clr+'22',borderWidth:2,pointRadius:4
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{r:{min:0,max:100,grid:{color:'#1e2f4a'},angleLines:{color:'#1e2f4a'},ticks:{display:false},pointLabels:{color:'#64748b',font:{size:11}}}}
+    }
+  });
+
+  charts['tc2'] = new Chart(document.getElementById('tc2'),{
+    type:'doughnut',
+    data:{
+      labels:['Victoria','Empate','Derrota'],
+      datasets:[{
+        data:[t.wins,t.draws,t.losses],
+        backgroundColor:['#10b98188','#f59e0b88','#ef444488'],
+        borderColor:['#10b981','#f59e0b','#ef4444'],
+        borderWidth:2
+      }]
+    },
+    options:{cutout:'60%',plugins:{legend:{labels:{color:'#e2e8f0',font:{size:11}}}}}
+  });
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded',()=>{
+  renderGroupFilter();
+  renderGroups();
+  renderPredictions();
+});
+</script>
+</body>
+</html>
