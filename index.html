@@ -391,13 +391,13 @@ main{padding:28px 32px;max-width:1680px;margin:0 auto}
     <div class="card" style="border-color:rgba(0,212,255,.3)">
       <h3>⚙️ Modelo Poisson</h3>
       <div style="font-size:.75rem;color:var(--muted);line-height:1.6">
-        Los goles de cada equipo se modelan como variables de Poisson independientes con parámetro λ derivado de su fuerza de ataque, debilidad defensiva del rival y promedio global. Cada combinación de marcador exacto tiene probabilidad calculada, de ahí salen W/D/L.
+        Los goles de cada equipo se modelan con parámetro λ derivado de su fuerza de ataque, debilidad defensiva del rival y promedio global, con la <b>corrección de Dixon-Coles (ρ=-0.13)</b> que ajusta marcadores bajos (0-0, 1-0, 0-1, 1-1) — la Poisson independiente subestima empates ajustados y sobrestima victorias por la mínima. Cada combinación de marcador exacto tiene probabilidad calculada, de ahí salen W/D/L.
       </div>
     </div>
     <div class="card" style="border-color:rgba(124,58,237,.3)">
       <h3>🎲 Monte Carlo</h3>
       <div style="font-size:.75rem;color:var(--muted);line-height:1.6">
-        Se simula cada grupo 25.000 veces. En cada simulación, los goles de cada partido se sortean aleatoriamente con la distribución de Poisson. Se registra la tabla final de cada simulación. La probabilidad de clasificar = (veces que terminó 1° o 2°) / 25.000.
+        Se simula cada grupo 25.000 veces. En cada simulación, el marcador de cada partido se sortea de la distribución conjunta de Poisson ya corregida por Dixon-Coles (no de cada equipo por separado, para conservar la correlación entre ambos marcadores). Se registra la tabla final de cada simulación. La probabilidad de clasificar = (veces que terminó 1° o 2°) / 25.000.
       </div>
     </div>
     <div class="card" style="border-color:rgba(249,115,22,.3)">
@@ -975,13 +975,19 @@ function pPMF(k, lam) {
   return Math.exp(lp);
 }
 
-// Sample from Poisson(λ) — Knuth algorithm (fast for λ ≤ 30)
-function pSample(lam) {
-  if (lam <= 0) return 0;
-  const L = Math.exp(-lam);
-  let k = 0, p = 1;
-  do { k++; p *= Math.random(); } while (p > L);
-  return k - 1;
+// Dixon-Coles (1997) low-score correlation correction. Independent Poisson
+// underrates 0-0/1-1 draws and overrates 1-0/0-1 — rho corrects for that.
+const RHO = -0.13;
+function dcTau(x, y, lA, lB, rho) {
+  if (x === 0 && y === 0) return 1 - lA * lB * rho;
+  if (x === 0 && y === 1) return 1 + lA * rho;
+  if (x === 1 && y === 0) return 1 + lB * rho;
+  if (x === 1 && y === 1) return 1 - rho;
+  return 1;
+}
+// Joint P(goalsA=i, goalsB=j) with the Dixon-Coles correction applied
+function jointP(i, j, lA, lB) {
+  return Math.max(0, pPMF(i, lA) * pPMF(j, lB) * dcTau(i, j, lA, lB, RHO));
 }
 
 // Compute lambdas for a match between two team IDs
@@ -995,14 +1001,34 @@ function getLambdas(idA, idB) {
   };
 }
 
-// W/D/L probabilities from Poisson (up to maxG goals each side)
+// Build an inverse-CDF sampler over the corrected joint score distribution,
+// so Monte Carlo draws respect the same low-score correlation as the W/D/L model.
+function buildScoreSampler(idA, idB, maxG=10) {
+  const {lA, lB} = getLambdas(idA, idB);
+  const n = (maxG + 1) * (maxG + 1);
+  const cum = new Float64Array(n), gi = new Uint8Array(n), gj = new Uint8Array(n);
+  let total = 0, k = 0;
+  for (let i = 0; i <= maxG; i++) {
+    for (let j = 0; j <= maxG; j++) {
+      total += jointP(i, j, lA, lB);
+      cum[k] = total; gi[k] = i; gj[k] = j; k++;
+    }
+  }
+  return () => {
+    const r = Math.random() * total;
+    let lo = 0, hi = n - 1;
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (cum[mid] < r) lo = mid + 1; else hi = mid; }
+    return [gi[lo], gj[lo]];
+  };
+}
+
+// W/D/L probabilities from Poisson + Dixon-Coles (up to maxG goals each side)
 function poissonProbs(idA, idB, maxG=9) {
   const {lA, lB} = getLambdas(idA, idB);
   let w=0, d=0, l=0;
   for (let i=0; i<=maxG; i++) {
-    const pi = pPMF(i, lA);
     for (let j=0; j<=maxG; j++) {
-      const p = pi * pPMF(j, lB);
+      const p = jointP(i, j, lA, lB);
       if (i>j) w+=p; else if (i===j) d+=p; else l+=p;
     }
   }
@@ -1016,7 +1042,7 @@ function scoreMatrix(idA, idB, maxG=4) {
   const m = [];
   for (let i=0; i<=maxG; i++) {
     m[i] = [];
-    for (let j=0; j<=maxG; j++) m[i][j] = pPMF(i,lA)*pPMF(j,lB);
+    for (let j=0; j<=maxG; j++) m[i][j] = jointP(i, j, lA, lB);
   }
   return {m, lA, lB};
 }
@@ -1031,20 +1057,20 @@ function simulateGroupMC(group, nSims=25000) {
   const base = {};
   group.teams.forEach(t => base[t.id]={pts:t.pts||0,gf:t.gf||0,gc:t.gc||0});
 
-  // Future matches with resolved IDs
+  // Future matches with resolved IDs — sampler precomputed once per match (Dixon-Coles corrected)
   const future = group.matches
     .filter(m=>m.state!=='played')
     .map(m=>({idA:teamIdFromLabel(m.t1),idB:teamIdFromLabel(m.t2)}))
-    .filter(m=>m.idA&&m.idB);
+    .filter(m=>m.idA&&m.idB)
+    .map(m=>({...m, sample:buildScoreSampler(m.idA,m.idB)}));
 
   for (let s=0; s<nSims; s++) {
     // Clone base state
     const st = {};
     tids.forEach(id => st[id]={...base[id]});
 
-    for (const {idA,idB} of future) {
-      const {lA,lB} = getLambdas(idA,idB);
-      const gA = pSample(lA), gB = pSample(lB);
+    for (const {idA,idB,sample} of future) {
+      const [gA,gB] = sample();
       st[idA].gf+=gA; st[idA].gc+=gB;
       st[idB].gf+=gB; st[idB].gc+=gA;
       if (gA>gB)       st[idA].pts+=3;
