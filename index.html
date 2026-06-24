@@ -384,7 +384,7 @@ main{padding:28px 32px;max-width:1680px;margin:0 auto}
   </div>
   <div class="live-badge"><span class="live-dot"></span>FASE DE GRUPOS EN CURSO</div>
   <div class="header-meta">
-    <div>Actualizado: <b>22 jun 2026</b></div>
+    <div>Actualizado: <b>24 jun 2026</b></div>
     <div>Fuentes: <b>ESPN · FootyStats · FIFA.com · CBS · Yahoo Sports</b></div>
     <div>Solo partidos oficiales · Sin amistosos</div>
   </div>
@@ -408,16 +408,18 @@ main{padding:28px 32px;max-width:1680px;margin:0 auto}
   <div style="background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.3);border-radius:10px;padding:12px 18px;margin-bottom:16px;font-size:.78rem;display:flex;gap:10px;align-items:flex-start">
     <span style="font-size:1.2rem">📡</span>
     <div>
-      <b style="color:var(--acc3)">Resultados confirmados al 22 jun 2026</b> — destacados CONMEBOL:
-      <b style="color:var(--acc)">Argentina 2-0 Austria</b> (doblete de Messi, ya clasificada a dieciseisavos; Messi superó a Klose como máximo goleador histórico de los Mundiales) ·
-      Colombia 3-1 Uzbekistán (debut con triunfo) ·
+      <b style="color:var(--acc3)">Resultados confirmados al 24 jun 2026</b> — destacados CONMEBOL:
+      <b style="color:var(--acc)">Colombia 1-0 Congo DR</b> (gol de Muñoz, ya clasificada a dieciseisavos como líder del Grupo K) ·
+      Argentina ya clasificada con 6 pts tras el 2-0 a Austria (doblete de Messi, máximo goleador histórico de los Mundiales) ·
       Paraguay 1-0 Turquía (revive sus chances) ·
-      Brasil lidera el Grupo C con 4 pts (3-0 a Haití) ·
+      Brasil lidera el Grupo C con 4 pts (3-0 a Haití), hoy define el liderato ante Escocia ·
       Uruguay sigue invicto (2-2 ante Cabo Verde) ·
-      Ecuador 0-0 ante Curazao, sigue último en el Grupo E ·
-      Egipto 3-1 a Nueva Zelanda (primer triunfo mundialista egipcio, gol y asistencia de Salah) ·
-      Noruega 1-0 a Senegal, lidera el Grupo I ·
-      <span style="color:var(--acc3)">EN VIVO: Francia vs Irak (Grupo I) — suspendido por tormenta eléctrica, 1-0 con gol de Mbappé al entretiempo</span>
+      Ecuador 0-0 ante Curazao, sigue último en el Grupo E, define todo ante Alemania el 25/6 ·
+      Francia 3-0 Irak (doblete de Mbappé tras la suspensión por tormenta) ya está en dieciseisavos ·
+      Argelia 2-1 a Jordania (remontada agónica) revive en el Grupo J ·
+      Portugal 5-0 a Uzbekistán (doblete de Cristiano Ronaldo) ·
+      Inglaterra 0-0 con Ghana y Panamá eliminado tras perder 0-1 con Croacia
+      <span style="color:var(--acc3)">EN VIVO hoy 24/6: Chequia vs México, Suiza vs Canadá (Grupo A/B) y Escocia vs Brasil (Grupo C)</span>
     </div>
   </div>
 
@@ -572,19 +574,20 @@ const TEAMS = {
   col:{id:'col',flag:'🇨🇴',name:'Colombia',short:'COL',fifa:13,elo:1982,
     wins:70,draws:10,losses:20,gf:2.5,ga:1.0,xG:1.56,xGA:1.04,cs:50,
     poss:60,shots:13.1,conv:19,over25:80,over15:null,btts:50,
-    forma:['G','G','G','E','E'],
+    forma:['G','G','G','G','E'],
     idxF:65,idxO:70,idxD:62,idxM:67.8,probW:55,probD:22,probL:23,
-    group:'K',groupRank:1,pts:3,played:1,
-    hotDato:'Goleó <strong>6-3 a Venezuela en Caracas</strong> y promedia <strong>2.5 goles por partido</strong> (últimos 10 oficiales) — la mayor producción ofensiva CONMEBOL. Lo confirmó con un <strong>3-1 a Uzbekistán</strong> en su debut mundialista (Jun 17, goles de Muñoz, Díaz y Campaz) y lidera el Grupo K.',
+    group:'K',groupRank:1,pts:6,played:2,
+    hotDato:'Goleó <strong>6-3 a Venezuela en Caracas</strong> y promedia <strong>2.5 goles por partido</strong> (últimos 10 oficiales) — la mayor producción ofensiva CONMEBOL. Lo confirmó con un <strong>3-1 a Uzbekistán</strong> en su debut mundialista (Jun 17, goles de Muñoz, Díaz y Campaz) y un <strong>1-0 a Congo DR</strong> (Jun 23, gol de Muñoz) — con 6 puntos ya está matemáticamente clasificada y lidera el Grupo K.',
     worldcupPath:[
-      {stage:'Grupo K',pred:'2°',prob:88},
-      {stage:'Round 32',pred:'vs 3° Grupo',prob:65},
-      {stage:'Octavos',pred:'Rival mid',prob:50},
-      {stage:'Cuartos',pred:'',prob:32},
-      {stage:'Semis',pred:'',prob:18},
-      {stage:'Final',pred:'',prob:9},
+      {stage:'Grupo K',pred:'1°',prob:99},
+      {stage:'Round 32',pred:'Clasificado',prob:100},
+      {stage:'Octavos',pred:'Rival mid',prob:55},
+      {stage:'Cuartos',pred:'',prob:35},
+      {stage:'Semis',pred:'',prob:20},
+      {stage:'Final',pred:'',prob:10},
     ],
     results:[
+      {d:'Jun 23, 2026',r:'Congo DR',sc:'1-0',res:'G',c:'Mundial Grupo K ✅'},
       {d:'Jun 17, 2026',r:'Uzbekistán',sc:'3-1',res:'G',c:'Mundial Grupo K ✅'},
       {d:'Sep 9, 2025',r:'Venezuela',sc:'6-3',res:'G',c:'Eliminatoria'},
       {d:'Sep 4, 2025',r:'Bolivia',sc:'3-0',res:'G',c:'Eliminatoria'},
@@ -844,46 +847,46 @@ const GROUPS = [
     id:'J', label:'Grupo J', conmebol:['arg'],
     teams:[
       {id:'arg',flag:'🇦🇷',name:'Argentina',fifa:1,pts:6,pj:2,pg:2,pe:0,pp:0,gf:5,gc:0,elo:2115,csProb:99},
-      {id:'aut',flag:'🇦🇹',name:'Austria',fifa:25,pts:3,pj:2,pg:1,pe:0,pp:1,gf:3,gc:3,elo:1875,csProb:55},
-      {id:'alg',flag:'🇩🇿',name:'Argelia',fifa:33,pts:0,pj:1,pg:0,pe:0,pp:1,gf:0,gc:3,elo:1810,csProb:15},
-      {id:'jor',flag:'🇯🇴',name:'Jordania',fifa:87,pts:0,pj:1,pg:0,pe:0,pp:1,gf:1,gc:3,elo:1570,csProb:3},
+      {id:'aut',flag:'🇦🇹',name:'Austria',fifa:25,pts:3,pj:2,pg:1,pe:0,pp:1,gf:3,gc:3,elo:1875,csProb:58},
+      {id:'alg',flag:'🇩🇿',name:'Argelia',fifa:33,pts:3,pj:2,pg:1,pe:0,pp:1,gf:2,gc:4,elo:1810,csProb:32},
+      {id:'jor',flag:'🇯🇴',name:'Jordania',fifa:87,pts:0,pj:2,pg:0,pe:0,pp:2,gf:2,gc:5,elo:1570,csProb:0},
     ],
     matches:[
       {d:'Jun 16',t1:'🇦🇷 Argentina',t2:'🇩🇿 Argelia',sc:'3 - 0',state:'played',pw:0,pd:0,pl:0,venue:'Arrowhead Stad. (Kansas City)'},
       {d:'Jun 16',t1:'🇦🇹 Austria',t2:'🇯🇴 Jordania',sc:'3 - 1',state:'played',pw:0,pd:0,pl:0,venue:'Levi\'s Stad. (Santa Clara)'},
       {d:'Jun 22',t1:'🇦🇷 Argentina',t2:'🇦🇹 Austria',sc:'2 - 0',state:'played',pw:0,pd:0,pl:0,venue:'AT&T Stad. (Dallas)'},
-      {d:'Jun 22',t1:'🇯🇴 Jordania',t2:'🇩🇿 Argelia',sc:'vs',state:'future',pw:30,pd:32,pl:38,venue:'Levi\'s Stad. (Santa Clara)'},
+      {d:'Jun 22',t1:'🇯🇴 Jordania',t2:'🇩🇿 Argelia',sc:'1 - 2',state:'played',pw:0,pd:0,pl:0,venue:'Levi\'s Stad. (Santa Clara)'},
       {d:'Jun 27',t1:'🇯🇴 Jordania',t2:'🇦🇷 Argentina',sc:'vs',state:'future',pw:5,pd:12,pl:83,venue:'AT&T Stad. (Dallas)'},
       {d:'Jun 27',t1:'🇩🇿 Argelia',t2:'🇦🇹 Austria',sc:'vs',state:'future',pw:35,pd:32,pl:33,venue:'Arrowhead Stad. (Kansas City)'},
     ],
     projStandings:[
       {pos:1,id:'arg',flag:'🇦🇷',name:'Argentina',pts:'6-9',csProb:99},
-      {pos:2,id:'aut',flag:'🇦🇹',name:'Austria',pts:'3-6',csProb:55},
-      {pos:3,id:'jor',flag:'🇯🇴',name:'Jordania',pts:'0-6',csProb:15},
-      {pos:4,id:'alg',flag:'🇩🇿',name:'Argelia',pts:'0-6',csProb:3},
+      {pos:2,id:'aut',flag:'🇦🇹',name:'Austria',pts:'3-6',csProb:58},
+      {pos:3,id:'alg',flag:'🇩🇿',name:'Argelia',pts:'3-6',csProb:32},
+      {pos:4,id:'jor',flag:'🇯🇴',name:'Jordania',pts:'0',csProb:0},
     ]
   },
   {
     id:'K', label:'Grupo K', conmebol:['col'],
     teams:[
-      {id:'col',flag:'🇨🇴',name:'Colombia',fifa:13,pts:3,pj:1,pg:1,pe:0,pp:0,gf:3,gc:1,elo:1982,csProb:88},
-      {id:'por',flag:'🇵🇹',name:'Portugal',fifa:5,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:2050,csProb:82},
-      {id:'cod',flag:'🇨🇩',name:'Congo DR',fifa:52,pts:1,pj:1,pg:0,pe:1,pp:0,gf:1,gc:1,elo:1660,csProb:28},
-      {id:'uzb',flag:'🇺🇿',name:'Uzbekistán',fifa:61,pts:0,pj:1,pg:0,pe:0,pp:1,gf:1,gc:3,elo:1730,csProb:8},
+      {id:'col',flag:'🇨🇴',name:'Colombia',fifa:13,pts:6,pj:2,pg:2,pe:0,pp:0,gf:4,gc:1,elo:1982,csProb:99},
+      {id:'por',flag:'🇵🇹',name:'Portugal',fifa:5,pts:4,pj:2,pg:1,pe:1,pp:0,gf:6,gc:1,elo:2050,csProb:85},
+      {id:'cod',flag:'🇨🇩',name:'Congo DR',fifa:52,pts:1,pj:2,pg:0,pe:1,pp:1,gf:1,gc:2,elo:1660,csProb:10},
+      {id:'uzb',flag:'🇺🇿',name:'Uzbekistán',fifa:61,pts:0,pj:2,pg:0,pe:0,pp:2,gf:1,gc:8,elo:1730,csProb:2},
     ],
     matches:[
       {d:'Jun 17',t1:'🇵🇹 Portugal',t2:'🇨🇩 Congo DR',sc:'1 - 1',state:'played',pw:0,pd:0,pl:0,venue:'NRG Stad. (Houston)'},
       {d:'Jun 17',t1:'🇺🇿 Uzbekistán',t2:'🇨🇴 Colombia',sc:'1 - 3',state:'played',pw:0,pd:0,pl:0,venue:'Estadio Azteca (Ciudad de México)'},
-      {d:'Jun 23',t1:'🇵🇹 Portugal',t2:'🇺🇿 Uzbekistán',sc:'vs',state:'future',pw:80,pd:14,pl:6,venue:'NRG Stad. (Houston)'},
-      {d:'Jun 23',t1:'🇨🇴 Colombia',t2:'🇨🇩 Congo DR',sc:'vs',state:'future',pw:62,pd:22,pl:16,venue:'Estadio Akron (Guadalajara)'},
+      {d:'Jun 23',t1:'🇵🇹 Portugal',t2:'🇺🇿 Uzbekistán',sc:'5 - 0',state:'played',pw:0,pd:0,pl:0,venue:'NRG Stad. (Houston)'},
+      {d:'Jun 23',t1:'🇨🇴 Colombia',t2:'🇨🇩 Congo DR',sc:'1 - 0',state:'played',pw:0,pd:0,pl:0,venue:'Estadio Akron (Guadalajara)'},
       {d:'Jun 27',t1:'🇨🇴 Colombia',t2:'🇵🇹 Portugal',sc:'vs',state:'future',pw:22,pd:25,pl:53,venue:'Hard Rock Stad. (Miami)'},
       {d:'Jun 27',t1:'🇨🇩 Congo DR',t2:'🇺🇿 Uzbekistán',sc:'vs',state:'future',pw:42,pd:28,pl:30,venue:'Mercedes-Benz (Atlanta)'},
     ],
     projStandings:[
-      {pos:1,id:'col',flag:'🇨🇴',name:'Colombia',pts:'3-9',csProb:88},
-      {pos:2,id:'por',flag:'🇵🇹',name:'Portugal',pts:'1-7',csProb:82},
-      {pos:3,id:'cod',flag:'🇨🇩',name:'Congo DR',pts:'1-7',csProb:28},
-      {pos:4,id:'uzb',flag:'🇺🇿',name:'Uzbekistán',pts:'0-6',csProb:8},
+      {pos:1,id:'col',flag:'🇨🇴',name:'Colombia',pts:'6-9',csProb:99},
+      {pos:2,id:'por',flag:'🇵🇹',name:'Portugal',pts:'4-7',csProb:85},
+      {pos:3,id:'cod',flag:'🇨🇩',name:'Congo DR',pts:'1-4',csProb:10},
+      {pos:4,id:'uzb',flag:'🇺🇿',name:'Uzbekistán',pts:'0-3',csProb:2},
     ]
   },
   {
@@ -935,47 +938,47 @@ const GROUPS = [
   {
     id:'I', label:'Grupo I', conmebol:[],
     teams:[
-      {id:'fra',flag:'🇫🇷',name:'Francia',fifa:3,pts:3,pj:1,pg:1,pe:0,pp:0,gf:3,gc:1,elo:2060,csProb:92},
-      {id:'nor',flag:'🇳🇴',name:'Noruega',fifa:27,pts:6,pj:2,pg:2,pe:0,pp:0,gf:5,gc:1,elo:1840,csProb:95},
-      {id:'sen',flag:'🇸🇳',name:'Senegal',fifa:18,pts:0,pj:2,pg:0,pe:0,pp:2,gf:1,gc:4,elo:1870,csProb:12},
-      {id:'irq',flag:'🇮🇶',name:'Irak',fifa:53,pts:0,pj:1,pg:0,pe:0,pp:1,gf:1,gc:4,elo:1700,csProb:6},
+      {id:'fra',flag:'🇫🇷',name:'Francia',fifa:3,pts:6,pj:2,pg:2,pe:0,pp:0,gf:6,gc:1,elo:2060,csProb:97},
+      {id:'nor',flag:'🇳🇴',name:'Noruega',fifa:27,pts:6,pj:2,pg:2,pe:0,pp:0,gf:5,gc:1,elo:1840,csProb:96},
+      {id:'sen',flag:'🇸🇳',name:'Senegal',fifa:18,pts:0,pj:2,pg:0,pe:0,pp:2,gf:1,gc:4,elo:1870,csProb:8},
+      {id:'irq',flag:'🇮🇶',name:'Irak',fifa:53,pts:0,pj:2,pg:0,pe:0,pp:2,gf:1,gc:7,elo:1700,csProb:2},
     ],
     matches:[
       {d:'Jun 16',t1:'🇫🇷 Francia',t2:'🇸🇳 Senegal',sc:'3 - 1',state:'played',pw:0,pd:0,pl:0,venue:'MetLife Stad. (Nueva Jersey)'},
       {d:'Jun 16',t1:'🇮🇶 Irak',t2:'🇳🇴 Noruega',sc:'1 - 4',state:'played',pw:0,pd:0,pl:0,venue:'Gillette Stad. (Boston)'},
-      {d:'Jun 22',t1:'🇫🇷 Francia',t2:'🇮🇶 Irak',sc:'vs',state:'today',pw:85,pd:10,pl:5,venue:'Lincoln Fin. Field (Filadelfia)'},
+      {d:'Jun 22',t1:'🇫🇷 Francia',t2:'🇮🇶 Irak',sc:'3 - 0',state:'played',pw:0,pd:0,pl:0,venue:'Lincoln Fin. Field (Filadelfia)'},
       {d:'Jun 22',t1:'🇳🇴 Noruega',t2:'🇸🇳 Senegal',sc:'1 - 0',state:'played',pw:0,pd:0,pl:0,venue:'MetLife Stad. (Nueva Jersey)'},
       {d:'Jun 26',t1:'🇳🇴 Noruega',t2:'🇫🇷 Francia',sc:'vs',state:'future',pw:20,pd:26,pl:54,venue:'Gillette Stad. (Boston)'},
       {d:'Jun 26',t1:'🇸🇳 Senegal',t2:'🇮🇶 Irak',sc:'vs',state:'future',pw:60,pd:26,pl:14,venue:'BMO Field (Toronto)'},
     ],
     projStandings:[
-      {pos:1,id:'nor',flag:'🇳🇴',name:'Noruega',pts:'6-9',csProb:95},
-      {pos:2,id:'fra',flag:'🇫🇷',name:'Francia',pts:'3-6',csProb:90},
-      {pos:3,id:'sen',flag:'🇸🇳',name:'Senegal',pts:'0-3',csProb:12},
-      {pos:4,id:'irq',flag:'🇮🇶',name:'Irak',pts:'0-3',csProb:6},
+      {pos:1,id:'fra',flag:'🇫🇷',name:'Francia',pts:'6-9',csProb:97},
+      {pos:2,id:'nor',flag:'🇳🇴',name:'Noruega',pts:'6-9',csProb:96},
+      {pos:3,id:'sen',flag:'🇸🇳',name:'Senegal',pts:'0-3',csProb:8},
+      {pos:4,id:'irq',flag:'🇮🇶',name:'Irak',pts:'0-3',csProb:2},
     ]
   },
   {
     id:'L', label:'Grupo L', conmebol:[],
     teams:[
-      {id:'eng',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name:'Inglaterra',fifa:4,pts:3,pj:1,pg:1,pe:0,pp:0,gf:4,gc:2,elo:2040,csProb:90},
-      {id:'cro',flag:'🇭🇷',name:'Croacia',fifa:12,pts:0,pj:1,pg:0,pe:0,pp:1,gf:2,gc:4,elo:1880,csProb:40},
-      {id:'gha',flag:'🇬🇭',name:'Ghana',fifa:60,pts:3,pj:1,pg:1,pe:0,pp:0,gf:1,gc:0,elo:1730,csProb:55},
-      {id:'pan',flag:'🇵🇦',name:'Panamá',fifa:72,pts:0,pj:1,pg:0,pe:0,pp:1,gf:0,gc:1,elo:1660,csProb:10},
+      {id:'eng',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name:'Inglaterra',fifa:4,pts:4,pj:2,pg:1,pe:1,pp:0,gf:4,gc:2,elo:2040,csProb:90},
+      {id:'cro',flag:'🇭🇷',name:'Croacia',fifa:12,pts:3,pj:2,pg:1,pe:0,pp:1,gf:3,gc:4,elo:1880,csProb:55},
+      {id:'gha',flag:'🇬🇭',name:'Ghana',fifa:60,pts:4,pj:2,pg:1,pe:1,pp:0,gf:1,gc:0,elo:1730,csProb:70},
+      {id:'pan',flag:'🇵🇦',name:'Panamá',fifa:72,pts:0,pj:2,pg:0,pe:0,pp:2,gf:0,gc:2,elo:1660,csProb:1},
     ],
     matches:[
       {d:'Jun 17',t1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',t2:'🇭🇷 Croacia',sc:'4 - 2',state:'played',pw:0,pd:0,pl:0,venue:'AT&T Stad. (Arlington)'},
       {d:'Jun 17',t1:'🇬🇭 Ghana',t2:'🇵🇦 Panamá',sc:'1 - 0',state:'played',pw:0,pd:0,pl:0,venue:'BMO Field (Toronto)'},
-      {d:'Jun 23',t1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',t2:'🇬🇭 Ghana',sc:'vs',state:'future',pw:72,pd:18,pl:10,venue:'NRG Stad. (Houston)'},
-      {d:'Jun 23',t1:'🇵🇦 Panamá',t2:'🇭🇷 Croacia',sc:'vs',state:'future',pw:20,pd:28,pl:52,venue:'MetLife Stad. (Nueva Jersey)'},
+      {d:'Jun 23',t1:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',t2:'🇬🇭 Ghana',sc:'0 - 0',state:'played',pw:0,pd:0,pl:0,venue:'NRG Stad. (Houston)'},
+      {d:'Jun 23',t1:'🇵🇦 Panamá',t2:'🇭🇷 Croacia',sc:'0 - 1',state:'played',pw:0,pd:0,pl:0,venue:'MetLife Stad. (Nueva Jersey)'},
       {d:'Jun 27',t1:'🇵🇦 Panamá',t2:'🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra',sc:'vs',state:'future',pw:12,pd:18,pl:70,venue:'AT&T Stad. (Dallas)'},
       {d:'Jun 27',t1:'🇭🇷 Croacia',t2:'🇬🇭 Ghana',sc:'vs',state:'future',pw:55,pd:28,pl:17,venue:'Gillette Stad. (Boston)'},
     ],
     projStandings:[
-      {pos:1,id:'eng',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name:'Inglaterra',pts:'3-9',csProb:90},
-      {pos:2,id:'gha',flag:'🇬🇭',name:'Ghana',pts:'3-9',csProb:55},
-      {pos:3,id:'cro',flag:'🇭🇷',name:'Croacia',pts:'0-6',csProb:40},
-      {pos:4,id:'pan',flag:'🇵🇦',name:'Panamá',pts:'0-6',csProb:10},
+      {pos:1,id:'eng',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name:'Inglaterra',pts:'4-7',csProb:90},
+      {pos:2,id:'gha',flag:'🇬🇭',name:'Ghana',pts:'4-7',csProb:70},
+      {pos:3,id:'cro',flag:'🇭🇷',name:'Croacia',pts:'3-6',csProb:55},
+      {pos:4,id:'pan',flag:'🇵🇦',name:'Panamá',pts:'0',csProb:1},
     ]
   },
 ];
@@ -1350,8 +1353,8 @@ function renderMCScoreMatrices() {
 // ═══════════════════════════════════════════════════
 // VENTANA DE PREDICCIÓN (próximos 14 días)
 // ═══════════════════════════════════════════════════
-const TODAY_DAY = 22; // 22 jun 2026
-const WINDOW_END_DAY = 29; // hoy + 14 días
+const TODAY_DAY = 24; // 24 jun 2026
+const WINDOW_END_DAY = 31; // hoy + 14 días
 
 // ═══════════════════════════════════════════════════
 function showTab(id, btn) {
@@ -1498,13 +1501,11 @@ const ALL_PRED_MATCHES = [
   {g:'H',d:'Jun 26',t1:{flag:'🇺🇾',name:'Uruguay',sub:'FIFA #16 · 2pts'},t2:{flag:'🇪🇸',name:'España',sub:'FIFA #2 · Elo 2114 · 4pts'},pw:20,pd:22,pl:58,
     insight:'El <b>gran duelo del grupo</b>. España lidera con paso firme (4-0 a Arabia incluido); Uruguay sigue invicto pero con dos empates. Si ambos ya tienen el pase asegurado podría haber rotación. Si es partido decisivo: España favorita pero Uruguay defensivamente es muy sólido. Posible empate táctico.',best:'España'},
   // GROUP J - ARGENTINA
-  {g:'J',d:'Jun 27',t1:{flag:'🇯🇴',name:'Jordania',sub:'FIFA #87 · 0pts'},t2:{flag:'🇦🇷',name:'Argentina',sub:'FIFA #1 · 6pts · Clasificada'},pw:5,pd:12,pl:83,
-    insight:'Argentina ya está matemáticamente clasificada tras el 2-0 a Austria (doblete de Messi, que superó a Klose como máximo goleador histórico de los Mundiales). Llega ante el rival más débil del grupo (0 pts, cayó 1-3 ante Austria). Alta probabilidad de goleada argentina. Cuidado con lesiones en partido "de trámite".',best:'Argentina'},
+  {g:'J',d:'Jun 27',t1:{flag:'🇯🇴',name:'Jordania',sub:'FIFA #87 · 0pts · Eliminada'},t2:{flag:'🇦🇷',name:'Argentina',sub:'FIFA #1 · 6pts · Clasificada'},pw:5,pd:12,pl:83,
+    insight:'Argentina ya está matemáticamente clasificada tras el 2-0 a Austria (doblete de Messi, que superó a Klose como máximo goleador histórico de los Mundiales). Llega ante el colista del grupo, ya eliminado tras perder sus dos partidos (1-3 vs Austria, 1-2 vs Argelia). Alta probabilidad de goleada argentina. Cuidado con lesiones en partido "de trámite".',best:'Argentina'},
   // GROUP K - COLOMBIA
-  {g:'K',d:'Jun 23',t1:{flag:'🇨🇴',name:'Colombia',sub:'FIFA #13 · 3pts'},t2:{flag:'🇨🇩',name:'Congo DR',sub:'FIFA #52 · 1pt'},pw:62,pd:22,pl:16,
-    insight:'<b>Colombia llega lanzada</b> tras golear 3-1 a Uzbekistán (doblete de Muñoz y Díaz) y lidera el Grupo K. Congo DR viene de empatar 1-1 con Portugal — son más físicos, pero Colombia tiene la calidad para manejar el partido. Luis Díaz puede ser determinante en bandas.',best:'Colombia'},
-  {g:'K',d:'Jun 27',t1:{flag:'🇨🇴',name:'Colombia',sub:'FIFA #13'},t2:{flag:'🇵🇹',name:'Portugal',sub:'FIFA #5 · Elo 2050'},pw:22,pd:25,pl:53,
-    insight:'<b>El clásico del grupo</b>. Colombia llega como líder buscando el 1° puesto; Portugal viene de empatar con Congo DR y necesita reaccionar. Muy díficil para Colombia pero no imposible — ya le ganó a Argentina en Eliminatorias.',best:'Portugal'},
+  {g:'K',d:'Jun 27',t1:{flag:'🇨🇴',name:'Colombia',sub:'FIFA #13 · 6pts · Clasificada'},t2:{flag:'🇵🇹',name:'Portugal',sub:'FIFA #5 · Elo 2050 · 4pts'},pw:22,pd:25,pl:53,
+    insight:'<b>El clásico del grupo, ahora por el 1° puesto.</b> Colombia ya está clasificada y lidera con 6 pts tras vencer 1-0 a Congo DR (gol de Muñoz); Portugal viene de golear 5-0 a Uzbekistán (doblete de Cristiano Ronaldo) y suma 4 pts. Muy díficil para Colombia pero no imposible — ya le ganó a Argentina en Eliminatorias.',best:'Portugal'},
 ];
 
 // Identifica partidos de ALL_PRED_MATCHES para no duplicarlos al autogenerar el resto.
