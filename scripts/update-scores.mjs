@@ -61,12 +61,27 @@ function teamIdFromLabel(label, nameToId) {
   return nameToId[name] || null;
 }
 
+async function fetchWithRetry(url, retries = 4) {
+  let delay = 2000;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`ESPN respondió HTTP ${res.status}`);
+      return res;
+    } catch (err) {
+      if (attempt === retries) throw err;
+      console.warn(`Intento ${attempt} fallido (${err.message}), reintentando en ${delay / 1000}s…`);
+      await new Promise(r => setTimeout(r, delay));
+      delay *= 2;
+    }
+  }
+}
+
 async function fetchFinishedMatches(startDate) {
   const today = new Date();
   const fmt = d => d.toISOString().slice(0, 10).replace(/-/g, '');
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=300&dates=${fmt(startDate)}-${fmt(today)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`ESPN respondió HTTP ${res.status}`);
+  const res = await fetchWithRetry(url);
   const data = await res.json();
 
   const finished = [];
