@@ -17,7 +17,7 @@ const ESPN_NAME_TO_ID = {
   mexico:'mex', 'south korea':'kor', 'korea republic':'kor',
   'czech republic':'cze', czechia:'cze',
   'south africa':'rsa', canada:'can', switzerland:'sui',
-  'bosnia and herzegovina':'bih', 'bosnia-herzegovina':'bih', bosnia:'bih',
+  'bosnia and herzegovina':'bih', 'bosnia-herzegovina':'bih', 'bosnia herzegovina':'bih', bosnia:'bih',
   qatar:'qat', brazil:'bra', morocco:'mar', scotland:'sco', haiti:'hai',
   'united states':'usa', usa:'usa', australia:'aus', paraguay:'par',
   turkey:'tur', turkiye:'tur', germany:'ger',
@@ -38,8 +38,14 @@ function normalize(s) {
     .replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim();
 }
 
+// Pre-normalize all keys so espnNameToId works even when ESPN uses
+// hyphens, ampersands, or accents in display names (e.g. "Bosnia & Herzegovina").
+const ESPN_NORM = Object.fromEntries(
+  Object.entries(ESPN_NAME_TO_ID).map(([k, v]) => [normalize(k), v])
+);
+
 function espnNameToId(name) {
-  return ESPN_NAME_TO_ID[normalize(name)] || null;
+  return ESPN_NORM[normalize(name)] || null;
 }
 
 // Reuse the Spanish name→id map already defined inside index.html
